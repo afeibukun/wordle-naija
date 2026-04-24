@@ -4,15 +4,27 @@ interface SuccessModalProp {
     solution: string,
     isWon: boolean,
     attempts: string,
-    shareScore: () => Promise<void>,
+    onShare: () => Promise<void>,
+    onClose: () => void,
 }
 
-export default function SuccessModal({solution, isWon, attempts, shareScore}: SuccessModalProp) {
+export default function SuccessModal({solution, isWon, attempts, onShare, onClose}: SuccessModalProp) {
     return (
         <div
             className="fixed inset-0 bg-slate-950/80 flex items-center justify-center z-[100] animate-in fade-in zoom-in duration-300">
             <div
                 className="bg-slate-900 p-8 rounded-2xl border-2 border-slate-700 text-center max-w-sm w-full shadow-2xl">
+                <div>
+                <button
+                    onClick={onClose}
+                    className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white transition-colors"
+                    aria-label="Close"
+                >
+                    <svg xmlns="http://w3.org" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+                </div>
                 <h2 className="text-3xl font-black mb-4 text-slate-100">
                     {isWon ? "🎉 YOU SABI!" : "😔 OBAKPE!"}
                 </h2>
@@ -25,7 +37,7 @@ export default function SuccessModal({solution, isWon, attempts, shareScore}: Su
 
                 <div className="space-y-4">
                     <button
-                        onClick={shareScore}
+                        onClick={onShare}
                         className="w-full py-4 bg-slate-300 hover:bg-slate-400 font-bold rounded-xl flex items-center justify-center gap-2 cursor-pointer"
                     >
                         <span>SHARE SCORE</span>
