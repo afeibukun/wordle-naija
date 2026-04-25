@@ -26,19 +26,21 @@ export default function Keyboard({usedKeys, onChar, onEnter, onDelete}: Keyboard
     };
 
     return (
-        <div className="w-full max-w-lg">
-            {ROWS.map((row, i) => (
-                <div key={i} className="flex justify-center gap-1 mb-2">
-                    {row.map((key) => (
-                        <KeyboardButton
-                            key={key}
-                            keyLabel={key}
-                            onClick={() => handleKeyPress(key)}
-                            usedKeys={usedKeys}>
-                        </KeyboardButton>
-                    ))}
-                </div>
-            ))}
+        <div className="keyboard-container overflow-hidden">
+            <div className="w-full max-w-lg px-2 space-y-2">
+                {ROWS.map((row, i) => (
+                    <div key={i} className="keyboard-row flex justify-center gap-1">
+                        {row.map((key) => (
+                            <KeyboardButton
+                                key={key}
+                                keyLabel={key}
+                                onClick={() => handleKeyPress(key)}
+                                usedKeys={usedKeys}>
+                            </KeyboardButton>
+                        ))}
+                    </div>
+                ))}
+            </div>
         </div>
     );
 }
@@ -59,9 +61,9 @@ const KeyboardButton = ({keyLabel, onClick, usedKeys}: KeyboardButtonProps) => {
     }
     return (
         <button
-            className={`hover:bg-slate-400 rounded font-bold uppercase text-sm
+            className={`keyboard-button hover:bg-slate-400 rounded font-bold uppercase text-sm
                             ${keyStatus === CELL_STATUS.CORRECT ? "bg-green-600" : keyStatus === CELL_STATUS.PRESENT ? "bg-orange-500" : keyStatus === CELL_STATUS.ABSENT ? "bg-slate-800 text-slate-500" : "bg-slate-500"} 
-                            ${isSpecialKey ? "px-4 py-4 bg-slate-600 min-w-16" : "px-3 py-4 w-10"}`}
+                            ${isSpecialKey ? "px-2.5 md:px-4 py-4 bg-slate-600 min-w-8 md:min-w-16" : "px-2 md:px-3 py-4 w-8 md:w-10"}`}
             onMouseDown={
                 (e: MouseEvent<HTMLButtonElement>) => handleKeyPress(e, keyLabel)
             }

@@ -19,7 +19,7 @@ export default function Grid({guesses, currentGuess, solution, currentGuessIsSha
 
     const defaultGuess: Guess = Array(5).fill({char: '', status: CELL_STATUS.EMPTY})
     return (
-        <div className="grid grid-rows-6 gap-2 mb-8">
+        <div className="grid-container grid grid-rows-6 gap-2 mb-8">
             {/* 1. Past Guesses */}
             {guesses.map((guess: Guess, i: number) => (
                 <GameRow key={i} guess={guess} solution={solution} isSubmitted/>

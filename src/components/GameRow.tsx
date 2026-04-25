@@ -16,7 +16,7 @@ interface RowProps {
 export default function GameRow({guess, solution, isSubmitted = false}: RowProps) {
 
     return (
-        <div className="flex gap-2">
+        <div className="game-row flex gap-2">
             {guess.map((tile: Tile, i: number) => (
                     <TileView key={i} char={tile.char} status={tile.status}/>
                 )
@@ -34,7 +34,7 @@ const TileView = ({char, status}: TileProps) => {
     const isSubmitted = status !== CELL_STATUS.EMPTY;
     return (
         <div
-            className={`w-14 h-14 border-2 flex items-center justify-center text-2xl font-bold uppercase ${isSubmitted ? 'not-animate-flip' : ''} ${!isSubmitted && char !== "" ? 'animate-pop' : ''} ${STATUS_COLORS[status]}`}>
+            className={`game-tile w-14 h-14 border-2 flex items-center justify-center text-2xl font-bold uppercase ${isSubmitted ? 'not-animate-flip' : ''} ${!isSubmitted && char !== "" ? 'animate-pop' : ''} ${STATUS_COLORS[status]}`}>
             {char}
         </div>
     );

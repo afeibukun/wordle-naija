@@ -7,15 +7,16 @@ import GameToast from "@/src/components/GameToast";
 import SuccessModal from "@/src/components/Modal";
 import SystemToast from "@/src/components/SystemToast";
 import {useEffect, useState} from "react";
-import {getDailySolution, getRandomSolution} from "@/src/lib/gameUtils";
+import {getDailySolution} from "@/src/lib/gameUtils";
 import LanguageIndicator from "@/src/components/LanguageIndicator";
-import {Share2} from "lucide-react";
+import {ShareButton} from "@/src/ui/ShareButton";
+import {PrimaryButton} from "@/src/ui/PrimaryButton";
 
 
 export default function GameView() {
-    const defaultSolution = "pikin"
+    // const defaultSolution = "pikin"
     const [solution, setSolution] = useState<string>("");
-    const [currentLanguage, setCurrentLanguage] = useState<GameLanguage>("pid");
+    const [currentLanguage] = useState<GameLanguage>("pid");
     const [showModal, setShowModal] = useState<boolean>(false);
 
     useEffect(() => {
@@ -50,10 +51,10 @@ export default function GameView() {
     return (
         <div className="game">
             <div className="min-h-dvh bg-slate-900">
-                <main className="flex flex-col items-center justify-between h-full text-white gap-y-12 p-4 py-20">
-                    <header className="py-4">
-                        <h1 className="text-4xl font-black tracking-widest uppercase">Wordle Naija</h1>
-                        {appNotice && (<SystemToast message={appNotice}/>)}
+                <main className="flex flex-col items-center justify-between h-full text-white gap-y-6 md:gap-y-12 p-2 md:p-4 py-8 md:py-20">
+                    <header className="py-2 md:py-4">
+                        <h1 className="text-3xl md:text-4xl font-black tracking-widest uppercase">Wordle Naija</h1>
+                        {appNotice  && (<SystemToast message={appNotice}/>)}
                         <div>
                             <LanguageIndicator current={currentLanguage}/>
                         </div>
@@ -67,32 +68,21 @@ export default function GameView() {
                                 currentGuessIsShaking={isShaking}
                             />
                         </div>
-                        {gameStatus !== GAME_STATUS.PLAYING &&
-                            <div>
-                                <h2 className="text-3xl font-black mb-4 text-slate-100">
+                        {(gameStatus !== GAME_STATUS.PLAYING && !showModal) &&
+                            <div className="px-4">
+                                <h2 className="text-2xl md:text-3xl font-black mb-4 text-slate-100">
                                     {gameStatus === GAME_STATUS.WON ? "🎉 YOU Have Completed the game!" : "😔 Better Luck Next time!"}
                                 </h2>
-                                <div className="space-y-4">
-                                    <button
-                                        onClick={() => shareScore()}
-                                        className="w-full py-4 bg-slate-300 text-slate-800 hover:bg-slate-400 font-bold rounded-xl flex items-center justify-center gap-2 cursor-pointer"
-                                    >
-                                        <span>SHARE YOUR SCORE</span>
-                                        <Share2 className="w-5 h-5"/> {/* Use a small icon here */}
-                                    </button>
-                                    <button
-                                        onClick={() => window.location.reload()}
-                                        className="w-full py-4 bg-green-600 hover:bg-green-500 font-bold rounded-xl transition-all cursor-pointer"
-                                    >
-                                        PLAY AGAIN
-                                    </button>
+                                <div className="space-y-3 md:space-y-4 text-slate-900">
+                                    <ShareButton label="SHARE YOUR SCORE" onShare={() => shareScore()} />
+                                    <PrimaryButton label="PLAY AGAIN" onClick={() => window.location.reload()} />
                                 </div>
                             </div>
                         }
                         <div className="toast-container relative w-full">
-                            {toastMsg && (<GameToast message={toastMsg}/>)}
+                            {(toastMsg) && (<GameToast message={toastMsg}/>)}
                         </div>
-                        {gameStatus === GAME_STATUS.PLAYING &&
+                        {(gameStatus === GAME_STATUS.PLAYING || showModal) &&
                             <div>
                                 <Keyboard onChar={(char: string) => onChar(char)} onEnter={() => onEnter()}
                                           onDelete={() => onDelete()} usedKeys={usedKeys}/>
