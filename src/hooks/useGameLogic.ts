@@ -141,7 +141,7 @@ export function useGameLogic({solution, language}: UseGameLogicProps) {
 
     const shareScore = async () => {
         const emojiGrid = generateEmojiGrid(guesses);
-        const shareText = `Wordle Naija ${guesses.length}/6\n\n${emojiGrid}\n\nPlay at: [wordle-naija.com]`;
+        const shareText = `Wordle Naija ${guesses.length}/6\n\n${emojiGrid}\n\nPlay at: [wordle-naija.netlify.app]`;
 
         try {
             // 1. Force a copy to the clipboard first
