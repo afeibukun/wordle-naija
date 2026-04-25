@@ -53,7 +53,9 @@ interface KeyboardButtonProps {
 
 const KeyboardButton = ({keyLabel, onClick, usedKeys}: KeyboardButtonProps) => {
     const keyStatus = usedKeys[keyLabel.toLowerCase()]
-    const isSpecialKey = keyLabel === "ENTER" || keyLabel === "⌫"
+    const isEnterKey = keyLabel === "ENTER"
+    const isDeleteKey = keyLabel === "⌫"
+    const isSpecialKey = isEnterKey || isDeleteKey
 
     const handleKeyPress = (e: MouseEvent<HTMLButtonElement>, keyLabel: string) => {
         e.preventDefault();
@@ -63,12 +65,13 @@ const KeyboardButton = ({keyLabel, onClick, usedKeys}: KeyboardButtonProps) => {
         <button
             className={`keyboard-button hover:bg-slate-400 rounded font-bold uppercase
                             ${keyStatus === CELL_STATUS.CORRECT ? "bg-green-600" : keyStatus === CELL_STATUS.PRESENT ? "bg-orange-500" : keyStatus === CELL_STATUS.ABSENT ? "bg-slate-800 text-slate-500" : "bg-slate-500"} 
-                            ${isSpecialKey ? "text-[12px] md:text-sm px-3 md:px-4 py-4 bg-slate-600 min-w-10 md:min-w-16" : "text-sm px-2 md:px-3 py-4 w-8 md:w-10"}`}
+                            ${isSpecialKey ? "md:px-4 py-4 bg-slate-600 min-w-10 md:min-w-16" : "px-2 md:px-3 py-4 w-8 md:w-10"}
+                            ${isDeleteKey ? 'relative px-1' : isEnterKey ? 'px-2 text-sm md:text-base' : ''}`}
             onMouseDown={
                 (e: MouseEvent<HTMLButtonElement>) => handleKeyPress(e, keyLabel)
             }
         >
-            {keyLabel}
+            <span className={`${isDeleteKey ? 'absolute text-2xl inset-0 flex items-center justify-center' : ''}`}>{keyLabel}</span>
         </button>
     )
 }
