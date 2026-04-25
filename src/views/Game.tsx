@@ -109,14 +109,14 @@ export default function GameView() {
                 </main>
             </div>
 
-            {(
+            {(showSuccessModal && (
                 <SuccessModal
                     solution={solution}
                     isWon={gameStatus === GAME_STATUS.WON}
                     attempts={guesses.length.toString()}
                     onShare={() => shareScore()}
                     onClose={() => closeSuccessModal()}
-                />
+                /> )
             )}
         </div>
     );
