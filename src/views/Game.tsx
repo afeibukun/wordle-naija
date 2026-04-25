@@ -53,7 +53,7 @@ export default function GameView() {
             <div className="min-h-dvh bg-slate-900">
                 <main className="flex flex-col items-center justify-between h-full text-white gap-y-6 md:gap-y-12 p-2 md:p-4 py-8 md:py-20">
                     <header className="py-2 md:py-4">
-                        <h1 className="text-3xl md:text-4xl font-black tracking-widest uppercase">Wordle Naija</h1>
+                        <h1 className="text-3xl md:text-4xl font-black tracking-widest uppercase">Wordle <span className="text-green-500">Naija</span></h1>
                         {appNotice  && (<SystemToast message={appNotice}/>)}
                         <div>
                             <LanguageIndicator current={currentLanguage}/>
