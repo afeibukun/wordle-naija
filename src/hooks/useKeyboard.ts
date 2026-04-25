@@ -39,7 +39,7 @@ export function useProxyKeyboard({disableSurfaceKeyboard}:ProxyKeyboardProps ) {
     const openProxyKeyboard = (e:MouseEvent<HTMLDivElement>) => {
         e.preventDefault();
         if (inputRef.current) {
-            inputRef.current.focus();
+            inputRef.current.focus({preventScroll: true});
             // setDefaultKeyboardListenerActive(false)
             disableSurfaceKeyboard()
         }

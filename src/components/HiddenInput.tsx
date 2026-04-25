@@ -14,7 +14,7 @@ export const HiddenInput = ({inputRef, onChar, onEnter, onDelete, enableSurfaceK
             <input
                 type="text"
                 ref={inputRef}
-                className="absolute opacity-0 pointer-events-none -z-50"
+                className="fixed top-0 left-0 opacity-0 pointer-events-none -z-50"
                 inputMode="text" // Ensures the text keyboard opens
                 autoCapitalize="none"
                 autoComplete="off"

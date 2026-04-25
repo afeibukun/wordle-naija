@@ -36,10 +36,14 @@ export default function HowToPlay({onClose}: { onClose: () => void }) {
                     ✕
                 </button>
 
-                <h2 className="text-lg md:text-2xl font-black mb-4 uppercase tracking-tight">How To Play</h2>
+                <div className="app-title text-left mb-2">
+                    <h1 className="text-lg md:text-xl font-black tracking-tight uppercase">
+                        <span className="text-slate-300">How to play</span> <span className="text-slate-100">Wordle</span> <span
+                        className="text-green-500">Naija</span></h1>
+                </div>
 
                 <div className="space-y-2 mb-6 list-disc">
-                    <p className="text-slate-300 text-sm md:text-base font-bold">
+                    <p className="text-slate-300 text-[12px] md:text-sm font-bold">
                         You guess the word in 6 attempts.
                     </p>
                     <p className="text-slate-300 text-[12px] md:text-sm">- Each attempts must be a valid 5-letter word in
