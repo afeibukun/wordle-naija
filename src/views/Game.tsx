@@ -43,8 +43,8 @@ export default function GameView() {
         onDelete,
         onEnter,
         appNotice,
-        showModal,
-        closeModal,
+        showSuccessModal,
+        closeSuccessModal,
         inputRef,
         openProxyKeyboard,
         enableSurfaceKeyboard,
@@ -81,21 +81,24 @@ export default function GameView() {
                                     enableSurfaceKeyboard={enableSurfaceKeyboard}
                                 />
                             </div>
-                            {(gameStatus !== GAME_STATUS.PLAYING && !showModal) &&
+                            {(gameStatus !== GAME_STATUS.PLAYING && !showSuccessModal) &&
                                 <div className="px-4">
                                     <h2 className="text-2xl md:text-3xl font-black mb-4 text-slate-100">
                                         {gameStatus === GAME_STATUS.WON ? "🎉 YOU Have Completed the game!" : "😔 Better Luck Next time!"}
                                     </h2>
                                     <div className="space-y-3 md:space-y-4 text-slate-900">
                                         <ShareButton label="SHARE YOUR SCORE" onShare={() => shareScore()}/>
+                                        <div>
                                         <PrimaryButton label="PLAY AGAIN" onClick={() => window.location.reload()}/>
+                                            <p className="text-[10px] md:text-sm text-slate-400 mt-2">Wordle Solution Refreshes daily</p>
+                                        </div>
                                     </div>
                                 </div>
                             }
                             <div className="toast-container relative w-full">
                                 {(toastMsg) && (<GameToast message={toastMsg}/>)}
                             </div>
-                            {(gameStatus === GAME_STATUS.PLAYING || showModal) &&
+                            {(gameStatus === GAME_STATUS.PLAYING || showSuccessModal) &&
                                 <div>
                                     <Keyboard onChar={(char: string) => onChar(char)} onEnter={() => onEnter()}
                                               onDelete={() => onDelete()} usedKeys={usedKeys}/>
@@ -106,13 +109,13 @@ export default function GameView() {
                 </main>
             </div>
 
-            {showModal && (
+            {(
                 <SuccessModal
                     solution={solution}
                     isWon={gameStatus === GAME_STATUS.WON}
                     attempts={guesses.length.toString()}
                     onShare={() => shareScore()}
-                    onClose={() => closeModal()}
+                    onClose={() => closeSuccessModal()}
                 />
             )}
         </div>

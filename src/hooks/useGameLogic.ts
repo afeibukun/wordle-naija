@@ -51,7 +51,7 @@ export function useGameLogic({ language}: UseGameLogicProps) {
     const [appNotice, setAppNotice] = useState<string | null>("");
     const [isShaking, setIsShaking] = useState(false);
 
-    const [showModal, setShowModal] = useState<boolean>(false);
+    const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
 
     const [surfaceKeyboardActive, setSurfaceKeyboardActive] = useState<boolean>(true);
 
@@ -147,12 +147,13 @@ export function useGameLogic({ language}: UseGameLogicProps) {
 
     const openModal = useCallback(() => {
         if (gameStatus !== GAME_STATUS.PLAYING) {
-            setShowModal(true);
+            setShowSuccessModal(true);
+            if(gameStatus === GAME_STATUS.WON) setAppNotice("Amazing Work");
         }
     }, [gameStatus])
 
-    const closeModal = () => {
-            setShowModal(false);
+    const closeSuccessModal = () => {
+            setShowSuccessModal(false);
     }
 
     useEffect(() => {
@@ -209,8 +210,8 @@ export function useGameLogic({ language}: UseGameLogicProps) {
         onChar,
         onDelete,
         onEnter,
-        showModal,
-        closeModal,
+        showSuccessModal,
+        closeSuccessModal,
         inputRef,
         openProxyKeyboard,
         enableSurfaceKeyboard,

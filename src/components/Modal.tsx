@@ -39,7 +39,15 @@ export default function SuccessModal({solution, isWon, attempts, onShare, onClos
 
                 <div className="space-y-4">
                     <ShareButton label="SHARE SCORE" onShare={onShare} />
+                    <div>
                     <PrimaryButton label="PLAY AGAIN" onClick={() => window.location.reload()} />
+                    <p className="text-[10px] md:text-sm text-slate-400 mt-2">Wordle Solution Refreshes daily</p>
+                    </div>
+                </div>
+                <div className="text-center mt-4">
+                    <h1 className="text-[10px] md:text-sm font-black tracking-widest uppercase">
+                        <span className="text-slate-400">Wordle</span> <span
+                        className="text-green-500">Naija</span></h1>
                 </div>
 
             </div>
