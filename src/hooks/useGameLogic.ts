@@ -1,7 +1,8 @@
 import {CELL_STATUS, GAME_STATUS, GameLanguage, GameStatus, Guess, Tile, TileStatus} from "@/src/types/game";
-import {useCallback, useMemo, useState} from "react";
+import {MouseEvent, useCallback, useEffect, useMemo, useRef, useState} from "react";
 import dictionary from "@/src/data/dictionary.json";
-import {useKeyboard} from "@/src/hooks/useKeyboard";
+import {useProxyKeyboard, useSurfaceKeyboard} from "@/src/hooks/useKeyboard";
+import {getDailySolution} from "@/src/lib/gameUtils";
 
 export const formatGuess = (guess: string, solution: string) => {
     const solutionArray = [...solution.toLowerCase()];
@@ -33,11 +34,14 @@ export const formatGuess = (guess: string, solution: string) => {
 };
 
 interface UseGameLogicProps {
-    solution: string;
     language: GameLanguage;
 }
 
-export function useGameLogic({solution, language}: UseGameLogicProps) {
+export function useGameLogic({ language}: UseGameLogicProps) {
+
+    // const defaultSolution = "pikin"
+    const [solution, setSolution] = useState<string>("");
+
     const [guesses, setGuesses] = useState<Guess[]>([]);
     const [currentGuess, setCurrentGuess] = useState("");
     const [gameStatus, setGameStatus] = useState<GameStatus>(GAME_STATUS.PLAYING);
@@ -46,6 +50,10 @@ export function useGameLogic({solution, language}: UseGameLogicProps) {
     const [toastMsg, setToastMsg] = useState<string | null>("");
     const [appNotice, setAppNotice] = useState<string | null>("");
     const [isShaking, setIsShaking] = useState(false);
+
+    const [showModal, setShowModal] = useState<boolean>(false);
+
+    const [surfaceKeyboardActive, setSurfaceKeyboardActive] = useState<boolean>(true);
 
     // Memoize dictionary for O(1) lookup speed
     const validWords = useMemo(() => new Set(dictionary[language]), [language]);
@@ -100,7 +108,7 @@ export function useGameLogic({solution, language}: UseGameLogicProps) {
 
         // 1. Check if the word is long enough
         if (currentGuess.length !== 5) {
-            console.log("Too short!");
+            // console.log("Too short!");
             setIsShaking(true);
             // TODO: Trigger a "Too short" toast/animation
             setTimeout(() => setIsShaking(false), 500);
@@ -112,7 +120,7 @@ export function useGameLogic({solution, language}: UseGameLogicProps) {
         // 3. Check if it exists in the selected language's dictionary
         const isValid = validWords.has(formattedGuess);
         if (!isValid) {
-            console.log("Word not in dictionary!");
+            // console.log("Word not in dictionary!");
             setIsShaking(true);
             showToast("Word not in dictionary!");
             // TODO: Trigger a "shake" animation here
@@ -137,7 +145,34 @@ export function useGameLogic({solution, language}: UseGameLogicProps) {
         console.log("Checking word:", currentGuess);
     }, [currentGuess, guesses, solution, validWords, gameStatus]);
 
-    useKeyboard({onChar, onDelete, onEnter});
+    const openModal = useCallback(() => {
+        if (gameStatus !== GAME_STATUS.PLAYING) {
+            setShowModal(true);
+        }
+    }, [gameStatus])
+
+    const closeModal = () => {
+            setShowModal(false);
+    }
+
+    useEffect(() => {
+        // Pick the word only once on the client
+        // const word = getRandomSolution(currentLanguage);
+        const word = getDailySolution(language);
+        setSolution(word);
+    }, []); // Empty array ensures this only runs on mount
+
+    useEffect(() => {
+        openModal()
+    }, [gameStatus]);
+
+    useSurfaceKeyboard({onChar, onDelete, onEnter, disabled: !surfaceKeyboardActive});
+
+    const {inputRef, openProxyKeyboard} = useProxyKeyboard({ disableSurfaceKeyboard: ()=>setSurfaceKeyboardActive(false)});
+
+    const enableSurfaceKeyboard =() =>{
+        setSurfaceKeyboardActive(true);
+    }
 
     const shareScore = async () => {
         const emojiGrid = generateEmojiGrid(guesses);
@@ -163,7 +198,23 @@ export function useGameLogic({solution, language}: UseGameLogicProps) {
     };
 
     return {
-        guesses, currentGuess, gameStatus, usedKeys, toastMsg, appNotice, isShaking, onChar, onDelete, onEnter, shareScore
+        solution,
+        guesses,
+        currentGuess,
+        gameStatus,
+        usedKeys,
+        toastMsg,
+        appNotice,
+        isShaking,
+        onChar,
+        onDelete,
+        onEnter,
+        showModal,
+        closeModal,
+        inputRef,
+        openProxyKeyboard,
+        enableSurfaceKeyboard,
+        shareScore
     }
 }
 

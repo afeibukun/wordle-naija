@@ -1,6 +1,5 @@
 import GameRow from "@/src/components/GameRow";
 import {CELL_STATUS, Guess} from "@/src/types/game";
-import {useState} from "react";
 
 interface GridProps {
     guesses: Array<Guess>;

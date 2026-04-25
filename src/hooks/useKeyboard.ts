@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import {MouseEvent, useEffect, useRef} from 'react';
 
 interface KeyboardOptions {
     onChar: (key: string) => void;
@@ -7,7 +7,7 @@ interface KeyboardOptions {
     disabled?: boolean;
 }
 
-export function useKeyboard({ onChar, onDelete, onEnter, disabled }: KeyboardOptions) {
+export function useSurfaceKeyboard({ onChar, onDelete, onEnter, disabled }: KeyboardOptions) {
     useEffect(() => {
         if (disabled) return;
 
@@ -28,4 +28,22 @@ export function useKeyboard({ onChar, onDelete, onEnter, disabled }: KeyboardOpt
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [onChar, onDelete, onEnter, disabled]); // Listens for logic changes
+}
+
+interface ProxyKeyboardProps {
+    disableSurfaceKeyboard: () => void;
+}
+export function useProxyKeyboard({disableSurfaceKeyboard}:ProxyKeyboardProps ) {
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    const openProxyKeyboard = (e:MouseEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        if (inputRef.current) {
+            inputRef.current.focus();
+            // setDefaultKeyboardListenerActive(false)
+            disableSurfaceKeyboard()
+        }
+    };
+
+    return {inputRef, openProxyKeyboard};
 }

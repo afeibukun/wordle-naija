@@ -6,27 +6,19 @@ import {GAME_STATUS, GameLanguage,} from "@/src/types/game";
 import GameToast from "@/src/components/GameToast";
 import SuccessModal from "@/src/components/Modal";
 import SystemToast from "@/src/components/SystemToast";
-import {useEffect, useState} from "react";
+import {useEffect, useRef, useState, MouseEvent} from "react";
 import {getDailySolution} from "@/src/lib/gameUtils";
 import LanguageIndicator from "@/src/components/LanguageIndicator";
 import {ShareButton} from "@/src/ui/ShareButton";
 import {PrimaryButton} from "@/src/ui/PrimaryButton";
+import {HiddenInput} from "@/src/components/HiddenInput";
 
 
 export default function GameView() {
-    // const defaultSolution = "pikin"
-    const [solution, setSolution] = useState<string>("");
     const [currentLanguage] = useState<GameLanguage>("pid");
-    const [showModal, setShowModal] = useState<boolean>(false);
-
-    useEffect(() => {
-        // Pick the word only once on the client
-        // const word = getRandomSolution(currentLanguage);
-        const word = getDailySolution(currentLanguage);
-        setSolution(word);
-    }, []); // Empty array ensures this only runs on mount
 
     const {
+        solution,
         guesses,
         currentGuess,
         gameStatus,
@@ -37,35 +29,47 @@ export default function GameView() {
         onDelete,
         onEnter,
         appNotice,
+        showModal,
+        closeModal,
+        inputRef,
+        openProxyKeyboard,
+        enableSurfaceKeyboard,
         shareScore
-    } = useGameLogic({solution: solution, language: "pid"});
-
-    useEffect(() => {
-        if (gameStatus !== GAME_STATUS.PLAYING) {
-            setShowModal(true);
-        }
-    }, [gameStatus]);
+    } = useGameLogic({language: currentLanguage});
 
     if (!solution) return <div className="flex h-screen items-center justify-center">Loading...</div>
 
     return (
         <div className="game">
             <div className="min-h-dvh bg-slate-900">
-                <main className="flex flex-col items-center justify-between h-full text-white gap-y-6 md:gap-y-12 p-2 md:p-4 py-8 md:py-20">
+                <main
+                    className="flex flex-col items-center justify-between h-full text-white gap-y-6 md:gap-y-12 p-2 md:p-4 py-8 md:py-20">
                     <header className="py-2 md:py-4">
-                        <h1 className="text-3xl md:text-4xl font-black tracking-widest uppercase">Wordle <span className="text-green-500">Naija</span></h1>
-                        {appNotice  && (<SystemToast message={appNotice}/>)}
+                        <h1 className="text-3xl md:text-4xl font-black tracking-widest uppercase">Wordle <span
+                            className="text-green-500">Naija</span></h1>
+                        {appNotice && (<SystemToast message={appNotice}/>)}
                         <div>
                             <LanguageIndicator current={currentLanguage}/>
                         </div>
                     </header>
                     <div className="flex flex-col items-center justify-center">
-                        <div className="pb-10">
-                            <Grid
-                                guesses={guesses}
-                                currentGuess={currentGuess}
-                                solution={solution}
-                                currentGuessIsShaking={isShaking}
+                        <div>
+                            <div className="pb-10">
+                                <div onClick={(e: MouseEvent<HTMLDivElement>) => openProxyKeyboard(e)}>
+                                    <Grid
+                                        guesses={guesses}
+                                        currentGuess={currentGuess}
+                                        solution={solution}
+                                        currentGuessIsShaking={isShaking}
+                                    />
+                                </div>
+                            </div>
+                            <HiddenInput
+                                inputRef={inputRef}
+                                onChar={(char: string) => onChar(char)}
+                                onEnter={onEnter}
+                                onDelete={onDelete}
+                                enableSurfaceKeyboard={enableSurfaceKeyboard}
                             />
                         </div>
                         {(gameStatus !== GAME_STATUS.PLAYING && !showModal) &&
@@ -74,8 +78,8 @@ export default function GameView() {
                                     {gameStatus === GAME_STATUS.WON ? "🎉 YOU Have Completed the game!" : "😔 Better Luck Next time!"}
                                 </h2>
                                 <div className="space-y-3 md:space-y-4 text-slate-900">
-                                    <ShareButton label="SHARE YOUR SCORE" onShare={() => shareScore()} />
-                                    <PrimaryButton label="PLAY AGAIN" onClick={() => window.location.reload()} />
+                                    <ShareButton label="SHARE YOUR SCORE" onShare={() => shareScore()}/>
+                                    <PrimaryButton label="PLAY AGAIN" onClick={() => window.location.reload()}/>
                                 </div>
                             </div>
                         }
@@ -98,7 +102,7 @@ export default function GameView() {
                     isWon={gameStatus === GAME_STATUS.WON}
                     attempts={guesses.length.toString()}
                     onShare={() => shareScore()}
-                    onClose={() => setShowModal(false)}
+                    onClose={() => closeModal()}
                 />
             )}
         </div>

@@ -1,4 +1,5 @@
 import {CELL_STATUS, Guess, Tile, TileStatus} from "@/src/types/game";
+import {useRef} from "react";
 
 export const STATUS_COLORS = {
     [CELL_STATUS.CORRECT]: 'bg-green-600 border-green-600',
@@ -34,8 +35,11 @@ const TileView = ({char, status}: TileProps) => {
     const isSubmitted = status !== CELL_STATUS.EMPTY;
     return (
         <div
-            className={`game-tile w-14 h-14 border-2 flex items-center justify-center text-2xl font-bold uppercase ${isSubmitted ? 'not-animate-flip' : ''} ${!isSubmitted && char !== "" ? 'animate-pop' : ''} ${STATUS_COLORS[status]}`}>
-            {char}
+            className={`game-tile w-14 h-14 border-2 flex items-center justify-center text-2xl font-bold uppercase 
+            ${isSubmitted ? 'not-animate-flip' : ''} 
+            ${!isSubmitted && char !== "" ? 'animate-pop' : ''} 
+            ${STATUS_COLORS[status]}`}>
+            <span>{char}</span>
         </div>
     );
 }
