@@ -1,4 +1,13 @@
-import {CELL_STATUS, GAME_STATUS, GameLanguage, GameStatus, Guess, Tile, TileStatus} from "@/src/types/game";
+import {
+    CELL_STATUS,
+    GAME_STATUS,
+    GameLanguage,
+    GameStatus,
+    Guess, GUESS_STATUS,
+    GuessStatus,
+    Tile,
+    TileStatus
+} from "@/src/types/game";
 import {MouseEvent, useCallback, useEffect, useMemo, useRef, useState} from "react";
 import dictionary from "@/src/data/dictionary.json";
 import {useProxyKeyboard, useSurfaceKeyboard} from "@/src/hooks/useKeyboard";
@@ -37,7 +46,7 @@ interface UseGameLogicProps {
     language: GameLanguage;
 }
 
-export function useGameLogic({ language}: UseGameLogicProps) {
+export function useGameLogic({language}: UseGameLogicProps) {
 
     // const defaultSolution = "pikin"
     const [solution, setSolution] = useState<string>("");
@@ -54,6 +63,9 @@ export function useGameLogic({ language}: UseGameLogicProps) {
     const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
 
     const [surfaceKeyboardActive, setSurfaceKeyboardActive] = useState<boolean>(true);
+    // if the surface keyboard is active, the proxy keyboard should not be active and vice versa
+
+    const [guessState, setGuessState] = useState<GuessStatus>(GUESS_STATUS.TYPING);
 
     // Memoize dictionary for O(1) lookup speed
     const validWords = useMemo(() => new Set(dictionary[language]), [language]);
@@ -135,11 +147,19 @@ export function useGameLogic({ language}: UseGameLogicProps) {
         setCurrentGuess(""); // Clear for the next row
 
         updateUsedKeys(formattedCurrentGuess);
+
         // 5. Check Win/Loss conditions
         if (formattedGuess === solution.toLowerCase()) {
-            setGameStatus(GAME_STATUS.WON);
+
+            setTimeout(() => {
+                setAppNotice("Amazing Work");
+                setGameStatus(GAME_STATUS.WON);
+            }, 1600);
         } else if (guesses.length >= 5) { // 5 because we just added the 6th
-            setGameStatus(GAME_STATUS.LOST);
+            setTimeout(() => {
+                setAppNotice("Better Luck Next Time");
+                setGameStatus(GAME_STATUS.LOST);
+            }, 1600);
         }
         // Add your dictionary validation logic here!
         console.log("Checking word:", currentGuess);
@@ -148,12 +168,12 @@ export function useGameLogic({ language}: UseGameLogicProps) {
     const openModal = useCallback(() => {
         if (gameStatus !== GAME_STATUS.PLAYING) {
             setShowSuccessModal(true);
-            if(gameStatus === GAME_STATUS.WON) setAppNotice("Amazing Work");
+            // if (gameStatus === GAME_STATUS.WON)
         }
     }, [gameStatus])
 
     const closeSuccessModal = () => {
-            setShowSuccessModal(false);
+        setShowSuccessModal(false);
     }
 
     useEffect(() => {
@@ -167,11 +187,13 @@ export function useGameLogic({ language}: UseGameLogicProps) {
         openModal()
     }, [gameStatus]);
 
-    useSurfaceKeyboard({onChar, onDelete, onEnter, disabled: !surfaceKeyboardActive});
+    const {
+        inputRef,
+        openProxyKeyboard
+    } = useProxyKeyboard({disableSurfaceKeyboard: () => setSurfaceKeyboardActive(false)});
+    useSurfaceKeyboard({onChar, onDelete, onEnter, disabled: !surfaceKeyboardActive, inputRef});
 
-    const {inputRef, openProxyKeyboard} = useProxyKeyboard({ disableSurfaceKeyboard: ()=>setSurfaceKeyboardActive(false)});
-
-    const enableSurfaceKeyboard =() =>{
+    const enableSurfaceKeyboard = () => {
         setSurfaceKeyboardActive(true);
     }
 
@@ -214,6 +236,7 @@ export function useGameLogic({ language}: UseGameLogicProps) {
         closeSuccessModal,
         inputRef,
         openProxyKeyboard,
+        surfaceKeyboardActive,
         enableSurfaceKeyboard,
         shareScore
     }
