@@ -10,7 +10,7 @@ import {
 } from "@/src/types/game";
 import {MouseEvent, useCallback, useEffect, useMemo, useRef, useState} from "react";
 import dictionary from "@/src/data/dictionary.json";
-import {useProxyKeyboard, useSurfaceKeyboard} from "@/src/hooks/useKeyboard";
+import {useKeyboard, useProxyKeyboard, useSurfaceKeyboard} from "@/src/hooks/useKeyboard";
 import {getDailySolution} from "@/src/lib/gameUtils";
 
 export const formatGuess = (guess: string, solution: string) => {
@@ -46,7 +46,7 @@ interface UseGameLogicProps {
     language: GameLanguage;
 }
 
-export function useGameLogic({language}: UseGameLogicProps) {
+export function useGame({language}: UseGameLogicProps) {
 
     // const defaultSolution = "pikin"
     const [solution, setSolution] = useState<string>("");
@@ -62,10 +62,9 @@ export function useGameLogic({language}: UseGameLogicProps) {
 
     const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
 
-    const [surfaceKeyboardActive, setSurfaceKeyboardActive] = useState<boolean>(true);
     // if the surface keyboard is active, the proxy keyboard should not be active and vice versa
 
-    const [guessState, setGuessState] = useState<GuessStatus>(GUESS_STATUS.TYPING);
+    const [guessStatus, setGuessStatus] = useState<GuessStatus>(GUESS_STATUS.TYPING);
 
     // Memoize dictionary for O(1) lookup speed
     const validWords = useMemo(() => new Set(dictionary[language]), [language]);
@@ -102,6 +101,10 @@ export function useGameLogic({language}: UseGameLogicProps) {
         });
     };
 
+    const triggerShake = () => {
+        setIsShaking(true);
+        setTimeout(() => setIsShaking(false), 500);
+    }
     // Logic to add letters, backspace, and submit would go here
     const onChar = useCallback((char: string) => {
         if (gameStatus !== GAME_STATUS.PLAYING) return;
@@ -121,9 +124,8 @@ export function useGameLogic({language}: UseGameLogicProps) {
         // 1. Check if the word is long enough
         if (currentGuess.length !== 5) {
             // console.log("Too short!");
-            setIsShaking(true);
             // TODO: Trigger a "Too short" toast/animation
-            setTimeout(() => setIsShaking(false), 500);
+            triggerShake();
             return;
         }
         // 2. Normalize for dictionary check (lowercase & handle special chars)
@@ -133,36 +135,32 @@ export function useGameLogic({language}: UseGameLogicProps) {
         const isValid = validWords.has(formattedGuess);
         if (!isValid) {
             // console.log("Word not in dictionary!");
-            setIsShaking(true);
             showToast("Word not in dictionary!");
-            // TODO: Trigger a "shake" animation here
-            setTimeout(() => setIsShaking(false), 500);
+            triggerShake();
             return;
         }
 
+        setGuessStatus(GUESS_STATUS.SUBMITTING);
         // 4. If valid, submit the guess
         const formattedCurrentGuess = formatGuess(currentGuess, solution);
-
         setGuesses((prev) => [...prev, formattedCurrentGuess]);
         setCurrentGuess(""); // Clear for the next row
 
-        updateUsedKeys(formattedCurrentGuess);
-
         // 5. Check Win/Loss conditions
-        if (formattedGuess === solution.toLowerCase()) {
+        setTimeout(() => {
+            updateUsedKeys(formattedCurrentGuess);
+            setGuessStatus(GUESS_STATUS.TYPING);
 
-            setTimeout(() => {
-                setAppNotice("Amazing Work");
+            if (formattedGuess === solution.toLowerCase()) {
+                showSystemNotice("Amazing Work");
                 setGameStatus(GAME_STATUS.WON);
-            }, 1600);
-        } else if (guesses.length >= 5) { // 5 because we just added the 6th
-            setTimeout(() => {
-                setAppNotice("Better Luck Next Time");
+            } else if (guesses.length >= 5) { // 5 because we just added the 6th
+                showSystemNotice("Better Luck Next Time");
                 setGameStatus(GAME_STATUS.LOST);
-            }, 1600);
-        }
-        // Add your dictionary validation logic here!
-        console.log("Checking word:", currentGuess);
+            }
+        }, 1800);
+
+        // console.log("Checking word:", currentGuess);
     }, [currentGuess, guesses, solution, validWords, gameStatus]);
 
     const openModal = useCallback(() => {
@@ -187,15 +185,10 @@ export function useGameLogic({language}: UseGameLogicProps) {
         openModal()
     }, [gameStatus]);
 
-    const {
-        inputRef,
-        openProxyKeyboard
-    } = useProxyKeyboard({disableSurfaceKeyboard: () => setSurfaceKeyboardActive(false)});
-    useSurfaceKeyboard({onChar, onDelete, onEnter, disabled: !surfaceKeyboardActive, inputRef});
 
-    const enableSurfaceKeyboard = () => {
-        setSurfaceKeyboardActive(true);
-    }
+    const {
+        proxyInputRef, surfaceKeyboardActive, openProxyKeyboard, enableSurfaceKeyboard, onProxyInputChange, onProxyInputKeyDown} = useKeyboard({onChar, onDelete, onEnter, keyboardActive: (gameStatus === GAME_STATUS.PLAYING && guessStatus === GUESS_STATUS.TYPING)
+    });
 
     const shareScore = async () => {
         const emojiGrid = generateEmojiGrid(guesses);
@@ -234,10 +227,12 @@ export function useGameLogic({language}: UseGameLogicProps) {
         onEnter,
         showSuccessModal,
         closeSuccessModal,
-        inputRef,
+        proxyInputRef,
         openProxyKeyboard,
         surfaceKeyboardActive,
         enableSurfaceKeyboard,
+        onProxyInputChange,
+        onProxyInputKeyDown,
         shareScore
     }
 }

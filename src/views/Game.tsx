@@ -1,23 +1,35 @@
 "use client";
 import Grid from "@/src/components/Grid";
 import Keyboard from "@/src/components/Keyboard";
-import {useGameLogic} from "@/src/hooks/useGameLogic";
+import {useGame} from "@/src/hooks/useGame";
 import {GAME_STATUS, GameLanguage,} from "@/src/types/game";
 import GameToast from "@/src/components/GameToast";
 import SuccessModal from "@/src/components/Modal";
-import {useEffect, useRef, useState, MouseEvent} from "react";
-import {getDailySolution} from "@/src/lib/gameUtils";
+import {useEffect, useState, MouseEvent} from "react";
 import {ShareButton} from "@/src/ui/ShareButton";
 import {PrimaryButton} from "@/src/ui/PrimaryButton";
-import {HiddenInput} from "@/src/components/HiddenInput";
+import {ProxyKeyboardInput} from "@/src/components/ProxyKeyboardInput";
 import HowToPlay from "@/src/components/HowToPlay";
 import {Header} from "@/src/components/Header";
+import SplashScreen from "@/src/components/SplashScreen";
 
 
 export default function GameView() {
     const [currentLanguage] = useState<GameLanguage>("pid");
 
     const [showHelp, setShowHelp] = useState(false);
+
+    const [isLoaded, setIsLoaded] = useState(false);
+
+    useEffect(() => {
+        // Simulate loading game assets and dictionary
+        const timer = setTimeout(() => {
+            setIsLoaded(true)
+        }, 1000);
+        return () => {
+            clearTimeout(timer);
+        }
+    }, []);
 
     useEffect(() => {
         const hasSeenHelp = localStorage.getItem('hasSeenHelp');
@@ -45,20 +57,22 @@ export default function GameView() {
         appNotice,
         showSuccessModal,
         closeSuccessModal,
-        inputRef,
+        proxyInputRef,
         openProxyKeyboard,
+        onProxyInputChange,
+        onProxyInputKeyDown,
         enableSurfaceKeyboard,
         shareScore
-    } = useGameLogic({language: currentLanguage});
-
-    if (!solution) return <div className="flex h-screen items-center justify-center">Loading...</div>
+    } = useGame({language: currentLanguage});
 
     return (
         <div className="game">
             <div className="min-h-dvh bg-slate-900">
+                {(!solution || !isLoaded) && <SplashScreen/>}
                 <main
-                    className="flex flex-col items-center justify-between h-full text-white gap-y-6 md:gap-y-12">
-                    <Header currentLanguage={currentLanguage} appNotice={appNotice} onShowHelp={() => setShowHelp(true)} />
+                    className={`transition-opacity duration-750 ${(isLoaded && solution) ? 'opacity-100' : 'opacity-0'} flex flex-col items-center justify-between h-full text-white gap-y-6 md:gap-y-12`}>
+                    <Header currentLanguage={currentLanguage} appNotice={appNotice}
+                            onShowHelp={() => setShowHelp(true)}/>
                     {showHelp && <HowToPlay onClose={closeHelp}/>}
                     <div className="px-2 md:px-4 pt-2 pb-8 md:pt-12 md:pb-20">
                         <div className="flex flex-col items-center justify-center">
@@ -73,11 +87,10 @@ export default function GameView() {
                                         />
                                     </div>
                                 </div>
-                                <HiddenInput
-                                    inputRef={inputRef}
-                                    onChar={(char: string) => onChar(char)}
-                                    onEnter={onEnter}
-                                    onDelete={onDelete}
+                                <ProxyKeyboardInput
+                                    inputRef={proxyInputRef}
+                                    onChange={onProxyInputChange}
+                                    onKeyDown={onProxyInputKeyDown}
                                     enableSurfaceKeyboard={enableSurfaceKeyboard}
                                 />
                             </div>
@@ -89,8 +102,9 @@ export default function GameView() {
                                     <div className="space-y-3 md:space-y-4 text-slate-900">
                                         <ShareButton label="SHARE YOUR SCORE" onShare={() => shareScore()}/>
                                         <div>
-                                        <PrimaryButton label="PLAY AGAIN" onClick={() => window.location.reload()}/>
-                                            <p className="text-[10px] md:text-sm text-slate-400 mt-2">Wordle Solution Refreshes daily</p>
+                                            <PrimaryButton label="PLAY AGAIN" onClick={() => window.location.reload()}/>
+                                            <p className="text-[10px] md:text-sm text-slate-400 mt-2">Wordle Solution
+                                                Refreshes daily</p>
                                         </div>
                                     </div>
                                 </div>
@@ -110,13 +124,13 @@ export default function GameView() {
             </div>
 
             {(showSuccessModal && (
-                <SuccessModal
-                    solution={solution}
-                    isWon={gameStatus === GAME_STATUS.WON}
-                    attempts={guesses.length.toString()}
-                    onShare={() => shareScore()}
-                    onClose={() => closeSuccessModal()}
-                /> )
+                    <SuccessModal
+                        solution={solution}
+                        isWon={gameStatus === GAME_STATUS.WON}
+                        attempts={guesses.length.toString()}
+                        onShare={() => shareScore()}
+                        onClose={() => closeSuccessModal()}
+                    />)
             )}
         </div>
     );

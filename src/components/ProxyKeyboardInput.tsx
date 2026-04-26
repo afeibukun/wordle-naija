@@ -1,17 +1,13 @@
 import {ChangeEvent, RefObject, KeyboardEvent} from "react";
 
-interface HiddenInputProps {
+interface ProxyKeyboardInputProps {
     inputRef: RefObject<HTMLInputElement | null>;
-    onChar: (char: string) => void,
-    onEnter: () => void,
-    onDelete: () => void,
-    onChange: (e: ChangeEvent) => void,
+    onChange: (e: ChangeEvent<HTMLInputElement>) => void,
     onKeyDown: (e: KeyboardEvent) => void,
     enableSurfaceKeyboard: () => void,
-    surfaceKeyboardActive: boolean,
 }
 
-export const HiddenInput = ({inputRef, onChar, onEnter, onDelete, onChange, onKeyDown, enableSurfaceKeyboard, surfaceKeyboardActive}: HiddenInputProps) => {
+export const ProxyKeyboardInput = ({inputRef, onChange, onKeyDown, enableSurfaceKeyboard}: ProxyKeyboardInputProps) => {
     return (
         <div className="hidden-input-component keyboard-trigger">
             <input

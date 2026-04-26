@@ -1,15 +1,57 @@
-import {MouseEvent, useEffect, useRef} from 'react';
+import {ChangeEvent, KeyboardEvent as ReactKeyboardEvent, MouseEvent, RefObject, useEffect, useRef, useState} from 'react';
 
 interface KeyboardOptions {
+    keyboardActive?: boolean; // if the game itself requires keyboard to not be active
     onChar: (key: string) => void;
     onDelete: () => void;
     onEnter: () => void;
-    disabled?: boolean;
 }
 
-export function useSurfaceKeyboard({ onChar, onDelete, onEnter, disabled }: KeyboardOptions) {
+export function useKeyboard({keyboardActive = true, onChar, onDelete, onEnter}: KeyboardOptions) {
+
+    const [surfaceKeyboardActive, setSurfaceKeyboardActive] = useState<boolean>(true);
+
+    const enableSurfaceKeyboard = () => {
+        setSurfaceKeyboardActive(true);
+    }
+
+    const disableSurfaceKeyboard = () => {
+        setSurfaceKeyboardActive(false);
+    }
+
+    const {
+        proxyInputRef, openProxyKeyboard, onProxyInputChange, onProxyInputKeyDown
+    } = useProxyKeyboard({isActive: (keyboardActive && !surfaceKeyboardActive), onChar, onEnter, onDelete, disableSurfaceKeyboard});
+
+    useSurfaceKeyboard({
+        isActive: (surfaceKeyboardActive && keyboardActive),
+        proxyInputRef,
+        onChar,
+        onDelete,
+        onEnter,
+    });
+
+    return {
+        proxyInputRef,
+        surfaceKeyboardActive,
+        openProxyKeyboard,
+        enableSurfaceKeyboard,
+        onProxyInputChange,
+        onProxyInputKeyDown
+    }
+}
+interface SurfaceKeyboardOptions {
+    isActive?: boolean;
+    proxyInputRef: RefObject<HTMLInputElement | null>;
+    onChar: (key: string) => void;
+    onDelete: () => void;
+    onEnter: () => void;
+}
+export function useSurfaceKeyboard({ isActive = true, proxyInputRef, onChar, onDelete, onEnter }: SurfaceKeyboardOptions) {
     useEffect(() => {
-        if (disabled) return;
+        if (!isActive) return;
+
+        if (proxyInputRef && document.activeElement === proxyInputRef.current) return;
 
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.repeat || e.ctrlKey || e.metaKey) return;
@@ -27,23 +69,42 @@ export function useSurfaceKeyboard({ onChar, onDelete, onEnter, disabled }: Keyb
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [onChar, onDelete, onEnter, disabled]); // Listens for logic changes
+    }, [isActive, proxyInputRef, onChar, onDelete, onEnter]); // Listens for logic changes
 }
 
 interface ProxyKeyboardProps {
+    isActive: boolean;
+    onChar: (key: string) => void;
+    onEnter: () => void;
+    onDelete: () => void;
     disableSurfaceKeyboard: () => void;
 }
-export function useProxyKeyboard({disableSurfaceKeyboard}:ProxyKeyboardProps ) {
-    const inputRef = useRef<HTMLInputElement>(null);
+export function useProxyKeyboard({isActive,onChar, onEnter, onDelete, disableSurfaceKeyboard}:ProxyKeyboardProps ) {
+    const proxyInputRef = useRef<HTMLInputElement>(null);
 
     const openProxyKeyboard = (e:MouseEvent<HTMLDivElement>) => {
         e.preventDefault();
-        if (inputRef.current) {
-            inputRef.current.focus({preventScroll: true});
+        if (proxyInputRef.current) {
+            proxyInputRef.current.focus({preventScroll: true});
             // setDefaultKeyboardListenerActive(false)
             disableSurfaceKeyboard()
         }
     };
 
-    return {inputRef, openProxyKeyboard};
+    const onProxyInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+        if(!isActive) return;
+        const char = e.target.value.slice(-1).toUpperCase();
+        if (/^[A-Z]$/.test(char)) onChar(char);
+        e.target.value = ""; // Reset so next character can be detected
+    }
+
+    const onProxyInputKeyDown = (e: ReactKeyboardEvent) => {
+        {
+            if(!isActive) return;
+            if (e.key === 'Enter') onEnter();
+            if (e.key === 'Backspace') onDelete();
+        }
+    }
+
+    return {proxyInputRef, openProxyKeyboard, onProxyInputChange, onProxyInputKeyDown};
 }

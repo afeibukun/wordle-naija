@@ -25,3 +25,9 @@ export const GAME_STATUS = {
 } as const;
 export type GameStatus = typeof GAME_STATUS[keyof typeof GAME_STATUS];
 
+export const GUESS_STATUS = {
+    TYPING: 'typing',
+    SUBMITTING: 'submitting',
+    COMPLETED: 'completed',
+} as const
+export type GuessStatus = typeof GUESS_STATUS[keyof typeof GUESS_STATUS];
