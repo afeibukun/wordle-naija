@@ -78,4 +78,31 @@ html, body {
   .animate-flip {
     animation: flip 0.5s ease-in-out forwards;
   }
+
+  /* Generic flip logic */
+  @keyframes flip-correct {
+    0% { transform: rotateX(0); background-color: transparent; }
+    50% { transform: rotateX(90deg); background-color: transparent; }
+    51% { background-color: #16a34a; border-color: #16a34a; } /* Green midpoint swap */
+    100% { transform: rotateX(0); background-color: #16a34a; border-color: #16a34a; }
+  }
+
+  @keyframes flip-present {
+    0% { transform: rotateX(0); background-color: transparent; }
+    50% { transform: rotateX(90deg); background-color: transparent; }
+    51% { background-color: #f97316; border-color: #f97316; } /* Orange midpoint swap */
+    100% { transform: rotateX(0); background-color: #f97316; border-color: #f97316; }
+  }
+
+  @keyframes flip-absent {
+    0% { transform: rotateX(0); background-color: transparent; }
+    50% { transform: rotateX(90deg); background-color: transparent; }
+    51% { background-color: #334155; border-color: #334155; } /* Gray midpoint swap */
+    100% { transform: rotateX(0); background-color: #334155; border-color: #334155; }
+  }
+
+  /* Utility classes to trigger them */
+  .animate-flip-correct { animation: flip-correct 0.6s ease forwards; }
+  .animate-flip-present { animation: flip-present 0.6s ease forwards; }
+  .animate-flip-absent { animation: flip-absent 0.6s ease forwards; }
 }

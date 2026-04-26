@@ -58,7 +58,7 @@ export default function HowToPlay({onClose}: { onClose: () => void }) {
                     {/* Example 1: Correct */}
                     <div>
                         <div className="scale-75 origin-left mb-1">
-                            <GameRow guess={exampleCorrect}/>
+                            <GameRow guess={exampleCorrect} isAnimationEnabled={false}/>
                         </div>
                         <p className="text-[12px] md:text-sm text-slate-400">
                             <span className="text-white font-bold uppercase">A</span> is in the word and in the correct
@@ -69,7 +69,7 @@ export default function HowToPlay({onClose}: { onClose: () => void }) {
                     {/* Example 2: Present */}
                     <div>
                         <div className="scale-75 origin-left mb-1">
-                            <GameRow guess={examplePresent}/>
+                            <GameRow guess={examplePresent} isAnimationEnabled={false}/>
                         </div>
                         <p className="text-[12px] md:text-sm text-slate-400">
                             <span className="text-white font-bold uppercase">I</span> is in the word but in the wrong
@@ -79,7 +79,7 @@ export default function HowToPlay({onClose}: { onClose: () => void }) {
                     {/* Example 3: Present */}
                     <div>
                         <div className="scale-75 origin-left mb-1">
-                            <GameRow guess={exampleAbsent}/>
+                            <GameRow guess={exampleAbsent} isAnimationEnabled={false}/>
                         </div>
                         <p className="text-[12px] md:text-sm text-slate-400">
                             <span className="text-white font-bold uppercase">P</span> is not in the word in any spot.
