@@ -1,11 +1,6 @@
 import {GameLanguage} from '@/src/types/game';
+import {LANG_NAMES} from "@/src/data/constant";
 
-const LANG_NAMES: Record<GameLanguage, string> = {
-    pid: 'Nigerian Pidgin',
-    yo: 'Yorùbá',
-    ig: 'Igbo',
-    ha: 'Hausa',
-};
 
 export default function LanguageIndicator({current}: { current: GameLanguage }) {
     return (

@@ -1,16 +1,21 @@
 import {Share2} from "lucide-react";
 import {ShareButton} from "@/src/ui/ShareButton";
 import {PrimaryButton} from "@/src/ui/PrimaryButton";
+import {GameLanguage} from "@/src/types/game";
+import {LANG_NAMES} from "@/src/data/constant";
 
 interface SuccessModalProp {
-    solution: string,
     isWon: boolean,
     attempts: string,
+    currentLanguage: GameLanguage,
     onShare: () => Promise<void>,
     onClose: () => void,
+    onRestart: (languageCode:GameLanguage) => void,
 }
 
-export default function SuccessModal({solution, isWon, attempts, onShare, onClose}: SuccessModalProp) {
+export default function SuccessModal({isWon, attempts, currentLanguage, onShare, onClose, onRestart}: SuccessModalProp) {
+    const otherLanguages = (['pid', 'yo', 'ig', 'ha'] as GameLanguage[]).filter(l => l != currentLanguage);
+
     return (
         <div
             className="modal fixed inset-0 bg-slate-950/80 flex items-center justify-center z-[100] animate-in fade-in zoom-in duration-300 px-4 md:px-2">
@@ -46,6 +51,22 @@ export default function SuccessModal({solution, isWon, attempts, onShare, onClos
                     <div>
                         <PrimaryButton label="PLAY AGAIN" onClick={() => window.location.reload()}/>
                         <p className="text-[10px] md:text-sm text-slate-400 mt-2">Wordle Solution Refreshes Daily</p>
+                    </div>
+                </div>
+                <div className="mt-8 pt-6 border-t border-slate-700">
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">
+                        Try another language
+                    </p>
+                    <div className="grid grid-cols-2 gap-2">
+                        {otherLanguages.map((langCode) => (
+                            <button
+                                key={langCode}
+                                onClick={() => onRestart(langCode)}
+                                className="py-2 px-3 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-xs font-bold transition-all text-slate-200"
+                            >
+                                Play in {LANG_NAMES[langCode]}
+                            </button>
+                        ))}
                     </div>
                 </div>
                 <div className="text-center mt-4">

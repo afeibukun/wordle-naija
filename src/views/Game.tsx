@@ -12,10 +12,10 @@ import {ProxyKeyboardInput} from "@/src/components/ProxyKeyboardInput";
 import HowToPlay from "@/src/components/HowToPlay";
 import {Header} from "@/src/components/Header";
 import SplashScreen from "@/src/components/SplashScreen";
+import {getDailySolution} from "@/src/lib/gameUtils";
 
 
 export default function GameView() {
-    const [currentLanguage] = useState<GameLanguage>("pid");
 
     const [showHelp, setShowHelp] = useState(false);
 
@@ -46,6 +46,7 @@ export default function GameView() {
     };
 
     const {
+        currentLanguage,
         solution,
         guesses,
         currentGuess,
@@ -66,8 +67,9 @@ export default function GameView() {
         onProxyInputKeyDown,
         enableSurfaceKeyboard,
         showResultsView,
-        shareScore
-    } = useGame({language: currentLanguage});
+        shareScore,
+        handleGameRestart
+    } = useGame();
 
     return (
         <div className="game">
@@ -82,6 +84,7 @@ export default function GameView() {
                     />
                     {showHelp && <HowToPlay onClose={closeHelp}/>}
                     <div className="px-2 md:px-4 pt-2 pb-8 md:pt-12 md:pb-20">
+                        {solution && (
                         <div className="flex flex-col items-center justify-center">
                             <div>
                                 <div className="pb-10">
@@ -105,7 +108,7 @@ export default function GameView() {
                             {(gameStatus !== GAME_STATUS.PLAYING && showResultsView && !showSuccessModal) &&
                                 <div className="px-4 md:px-24">
                                     <h2 className="text-2xl md:text-3xl font-black mb-4 text-slate-100">
-                                        {gameStatus === GAME_STATUS.WON ? "🎉 YOU Have Completed the game!" : "😔 Better Luck Next time!"}
+                                        {gameStatus === GAME_STATUS.WON ? "🎉 YOU Have Completed the game!" : "😔 Better Luck Next Time!"}
                                     </h2>
                                     <div className="space-y-3 md:space-y-4 text-slate-900">
                                         <ShareButton label="SHARE YOUR SCORE" onShare={() => shareScore()}/>
@@ -127,17 +130,19 @@ export default function GameView() {
                                 </div>
                             }
                         </div>
+                            ) }
                     </div>
                 </main>
             </div>
 
             {((showResultsView && showSuccessModal) && (
                     <SuccessModal
-                        solution={solution}
                         isWon={gameStatus === GAME_STATUS.WON}
                         attempts={guesses.length.toString()}
+                        currentLanguage={currentLanguage}
                         onShare={() => shareScore()}
                         onClose={() => closeSuccessModal()}
+                        onRestart={(newLanguage) => handleGameRestart(newLanguage)}
                     />)
             )}
         </div>

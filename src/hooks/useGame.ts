@@ -8,10 +8,11 @@ import {
     Tile,
     TileStatus
 } from "@/src/types/game";
-import { useCallback, useEffect, useMemo, useState} from "react";
+import {useCallback, useEffect, useMemo, useState} from "react";
 import dictionary from "@/src/data/dictionary.json";
 import {useKeyboard} from "@/src/hooks/useKeyboard";
 import {getDailySolution} from "@/src/lib/gameUtils";
+import {LANG_NAMES} from "@/src/data/constant";
 
 export const formatGuess = (guess: string, solution: string) => {
     const solutionArray = [...solution.toLowerCase()];
@@ -46,9 +47,7 @@ interface UseGameLogicProps {
     language: GameLanguage;
 }
 
-export function useGame({language}: UseGameLogicProps) {
-    const [solution] = useState<string>(() =>   getDailySolution(language));
-
+export function useGame() {
     const [guesses, setGuesses] = useState<Guess[]>([]);
     const [currentGuess, setCurrentGuess] = useState("");
     const [gameStatus, setGameStatus] = useState<GameStatus>(GAME_STATUS.PLAYING);
@@ -65,19 +64,35 @@ export function useGame({language}: UseGameLogicProps) {
 
     const [guessStatus, setGuessStatus] = useState<GuessStatus>(GUESS_STATUS.TYPING);
 
+    const showSystemNotice = (msg: string) => {
+        setAppNotice(msg)
+        setTimeout(() => setAppNotice(null), 2000);
+    }
+
+    const {currentLanguage, solution, handleLanguageChange} = useGameSetting({showSystemNotice})
+
+    const handleGameRestart = (newLang: GameLanguage) => {
+        // 1. Update the language state
+        handleLanguageChange(newLang, `Started new game in ${LANG_NAMES[newLang].toUpperCase()}` );
+
+        // 3. Reset all game states
+        setGuesses([]);
+        setCurrentGuess("");
+        setGameStatus(GAME_STATUS.PLAYING);
+        setGuessStatus(GUESS_STATUS.TYPING);
+        setUsedKeys({});
+        setShowSuccessModal(false);
+
+    };
+
     // Memoize dictionary for O(1) lookup speed
-    const validWords = useMemo(() => new Set(dictionary[language]), [language]);
+    const validWords = useMemo(() => new Set(dictionary[currentLanguage]), [currentLanguage]);
 
     // Show a toast message temporarily
     const showToast = (msg: string) => {
         setToastMsg(msg);
         setTimeout(() => setToastMsg(null), 2000);
     };
-
-    const showSystemNotice = (msg: string) => {
-        setAppNotice(msg)
-        setTimeout(() => setAppNotice(null), 2000);
-    }
 
     const updateUsedKeys = (formattedGuess: Tile[]) => {
         setUsedKeys((prev) => {
@@ -117,7 +132,7 @@ export function useGame({language}: UseGameLogicProps) {
         if (resultView === RESULT_VIEW.MODAL) {
             openSuccessModal();
         }
-    },[openSuccessModal]);
+    }, [openSuccessModal]);
 
 
     // Logic to add letters, backspace, and submit would go here
@@ -135,6 +150,8 @@ export function useGame({language}: UseGameLogicProps) {
 
     const onEnter = useCallback(() => {
         if (gameStatus !== GAME_STATUS.PLAYING) return;
+
+        if (!solution) return;
 
         // 1. Check if the word is long enough
         if (currentGuess.length !== 5) {
@@ -196,19 +213,8 @@ export function useGame({language}: UseGameLogicProps) {
         setShowSuccessModal(false);
     }
 
-    useEffect(() => {
-        // Pick the word only once on the client
-        // const word = getRandomSolution(currentLanguage);
-        // const word = getDailySolution(language);
-        // setSolution(word);
-    }, []); // Empty array ensures this only runs on mount
-
-    useEffect(() => {
-    }, [gameStatus]);
-
-    const isKeyboardActive = gameStatus === GAME_STATUS.PLAYING && guessStatus === GUESS_STATUS.TYPING
-    const isOnscreenKeyboardVisible = (
-        gameStatus === GAME_STATUS.PLAYING || showSuccessModal ||
+    const isKeyboardActive = (gameStatus === GAME_STATUS.PLAYING && guessStatus === GUESS_STATUS.TYPING);
+    const isOnscreenKeyboardVisible = (gameStatus === GAME_STATUS.PLAYING || showSuccessModal ||
         (!showResultsView && (gameStatus === GAME_STATUS.LOST || gameStatus === GAME_STATUS.WON)));
 
     const {
@@ -249,6 +255,7 @@ export function useGame({language}: UseGameLogicProps) {
     };
 
     return {
+        currentLanguage,
         solution,
         guesses,
         currentGuess,
@@ -270,8 +277,50 @@ export function useGame({language}: UseGameLogicProps) {
         onProxyInputChange,
         onProxyInputKeyDown,
         showResultsView,
-        shareScore
+        shareScore,
+        handleGameRestart
     }
+}
+
+interface GameSettingProps {
+    showSystemNotice: (msg: string) => void;
+}
+
+export function useGameSetting({showSystemNotice}: GameSettingProps) {
+    const [currentLanguage, setCurrentLanguage] = useState<GameLanguage>("pid");
+    const [solution, setSolution] = useState<string | null>(null);
+
+    const startNewGame = (newLang: GameLanguage) => {
+        const word = getDailySolution(newLang);
+        setSolution(word);
+        // Resetting game logic happens here
+    };
+
+    const handleLanguageChange = (newLanguage: GameLanguage, systemMessage?:string) => {
+        setCurrentLanguage(newLanguage);
+        localStorage.setItem('wordle-naija-lang', newLanguage);
+        startNewGame(newLanguage);
+
+        let msg = systemMessage
+        if(!msg) msg =  `Switched to ${LANG_NAMES[newLanguage].toUpperCase()}`
+        showSystemNotice(msg);
+    };
+
+    useEffect(() => {
+        // Initialize solution on mount
+        const savedLanguage = localStorage.getItem('wordle-naija-lang') as GameLanguage;
+        const initialLanguage = savedLanguage || 'pid';
+
+        setTimeout(() => {
+            setCurrentLanguage(initialLanguage);
+            startNewGame(initialLanguage)
+        }, 0)
+    }, []);
+
+    return {
+        currentLanguage, solution, handleLanguageChange,
+    }
+
 }
 
 export const generateEmojiGrid = (guesses: Guess[]) => {
