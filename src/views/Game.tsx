@@ -34,7 +34,9 @@ export default function GameView() {
     useEffect(() => {
         const hasSeenHelp = localStorage.getItem('hasSeenHelp');
         if (!hasSeenHelp) {
-            setShowHelp(true);
+            setTimeout(() => {
+                setShowHelp(true);
+            },0);
         }
     }, []);
 
@@ -57,11 +59,13 @@ export default function GameView() {
         appNotice,
         showSuccessModal,
         closeSuccessModal,
+        isOnscreenKeyboardVisible,
         proxyInputRef,
         openProxyKeyboard,
         onProxyInputChange,
         onProxyInputKeyDown,
         enableSurfaceKeyboard,
+        showResultsView,
         shareScore
     } = useGame({language: currentLanguage});
 
@@ -71,8 +75,11 @@ export default function GameView() {
                 {(!solution || !isLoaded) && <SplashScreen/>}
                 <main
                     className={`transition-opacity duration-750 ${(isLoaded && solution) ? 'opacity-100' : 'opacity-0'} flex flex-col items-center justify-between h-full text-white gap-y-6 md:gap-y-12`}>
-                    <Header currentLanguage={currentLanguage} appNotice={appNotice}
-                            onShowHelp={() => setShowHelp(true)}/>
+                    <Header
+                        currentLanguage={currentLanguage}
+                        appNotice={appNotice}
+                        onShowHelp={() => setShowHelp(true)}
+                    />
                     {showHelp && <HowToPlay onClose={closeHelp}/>}
                     <div className="px-2 md:px-4 pt-2 pb-8 md:pt-12 md:pb-20">
                         <div className="flex flex-col items-center justify-center">
@@ -84,6 +91,7 @@ export default function GameView() {
                                             currentGuess={currentGuess}
                                             solution={solution}
                                             currentGuessIsShaking={isShaking}
+                                            gameStatus={gameStatus}
                                         />
                                     </div>
                                 </div>
@@ -94,8 +102,8 @@ export default function GameView() {
                                     enableSurfaceKeyboard={enableSurfaceKeyboard}
                                 />
                             </div>
-                            {(gameStatus !== GAME_STATUS.PLAYING && !showSuccessModal) &&
-                                <div className="px-4">
+                            {(gameStatus !== GAME_STATUS.PLAYING && showResultsView && !showSuccessModal) &&
+                                <div className="px-4 md:px-24">
                                     <h2 className="text-2xl md:text-3xl font-black mb-4 text-slate-100">
                                         {gameStatus === GAME_STATUS.WON ? "🎉 YOU Have Completed the game!" : "😔 Better Luck Next time!"}
                                     </h2>
@@ -112,7 +120,7 @@ export default function GameView() {
                             <div className="toast-container relative w-full">
                                 {(toastMsg) && (<GameToast message={toastMsg}/>)}
                             </div>
-                            {(gameStatus === GAME_STATUS.PLAYING || showSuccessModal) &&
+                            {isOnscreenKeyboardVisible &&
                                 <div>
                                     <Keyboard onChar={(char: string) => onChar(char)} onEnter={() => onEnter()}
                                               onDelete={() => onDelete()} usedKeys={usedKeys}/>
@@ -123,7 +131,7 @@ export default function GameView() {
                 </main>
             </div>
 
-            {(showSuccessModal && (
+            {((showResultsView && showSuccessModal) && (
                     <SuccessModal
                         solution={solution}
                         isWon={gameStatus === GAME_STATUS.WON}

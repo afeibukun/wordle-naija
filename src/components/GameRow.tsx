@@ -19,14 +19,24 @@ interface RowProps {
     solution?: string;
     isSubmitted?: boolean;
     isAnimationEnabled?: boolean;
+    isGameWon?: boolean;
+    isLastGuess?: boolean;
 }
 
-export default function GameRow({guess, solution, isSubmitted = false, isAnimationEnabled=true}: RowProps) {
+export default function GameRow({
+                                    guess,
+                                    solution,
+                                    isSubmitted = false,
+                                    isAnimationEnabled = true,
+                                    isGameWon = false,
+                                    isLastGuess = false
+                                }: RowProps) {
 
     return (
         <div className="game-row flex gap-1 md:gap-2">
             {guess.map((tile: Tile, i: number) => (
-                    <TileView key={i} char={tile.char} status={tile.status} index={i} isAnimationEnabled={isAnimationEnabled}/>
+                    <TileView key={i} char={tile.char} status={tile.status} index={i}
+                              isAnimationEnabled={isAnimationEnabled} isTileOnWinningRow={isGameWon && isLastGuess}/>
                 )
             )}
         </div>
@@ -38,21 +48,26 @@ interface TileProps {
     status: TileStatus;
     index: number;
     isAnimationEnabled?: boolean;
+    isTileOnWinningRow?: boolean;
 }
 
-const TileView = ({char, status, index, isAnimationEnabled = true}: TileProps) => {
+const TileView = ({char, status, index, isAnimationEnabled = true, isTileOnWinningRow = false}: TileProps) => {
     const isSubmitted = status !== CELL_STATUS.EMPTY;
     const isOnCurrentRow = status === CELL_STATUS.EMPTY && char !== "" && char !== " ";
     return (
         <div
             style={{
                 // Each tile waits 100ms longer than the one before it
-                animationDelay: isSubmitted ? `${index * 150}ms` : '0ms',
-                transitionDelay: isSubmitted ? `${(index * 150) + 300}ms` : '0ms'
+                animationDelay: isTileOnWinningRow ? `${50 + (index * 100)}ms`
+                    : isSubmitted ? `${index * 150}ms` : '0ms',
             }}
             className={`game-tile w-12 md:w-14 h-12 md:h-14 border md:border-2 flex items-center justify-center text-lg md:text-2xl font-bold uppercase transition-colors duration-0
-            ${(isSubmitted && isAnimationEnabled) ? STATUS_STYLE[status] : (isOnCurrentRow && isAnimationEnabled) ? 'animate-pop' : STATUS_COLORS[status]} 
-            `}>
+            ${(isTileOnWinningRow && isAnimationEnabled) ? 'animate-bounce-win ' + STATUS_COLORS[status] 
+                : (isSubmitted && isAnimationEnabled) ? STATUS_STYLE[status]
+                    : (isOnCurrentRow && isAnimationEnabled) ? 'animate-pop'
+                        : STATUS_COLORS[status]} 
+            `}
+        >
             <span>{char}</span>
         </div>
     );

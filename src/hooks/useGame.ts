@@ -4,13 +4,13 @@ import {
     GameLanguage,
     GameStatus,
     Guess, GUESS_STATUS,
-    GuessStatus,
+    GuessStatus, RESULT_VIEW, ResultView,
     Tile,
     TileStatus
 } from "@/src/types/game";
-import {MouseEvent, useCallback, useEffect, useMemo, useRef, useState} from "react";
+import { useCallback, useEffect, useMemo, useState} from "react";
 import dictionary from "@/src/data/dictionary.json";
-import {useKeyboard, useProxyKeyboard, useSurfaceKeyboard} from "@/src/hooks/useKeyboard";
+import {useKeyboard} from "@/src/hooks/useKeyboard";
 import {getDailySolution} from "@/src/lib/gameUtils";
 
 export const formatGuess = (guess: string, solution: string) => {
@@ -47,9 +47,7 @@ interface UseGameLogicProps {
 }
 
 export function useGame({language}: UseGameLogicProps) {
-
-    // const defaultSolution = "pikin"
-    const [solution, setSolution] = useState<string>("");
+    const [solution] = useState<string>(() =>   getDailySolution(language));
 
     const [guesses, setGuesses] = useState<Guess[]>([]);
     const [currentGuess, setCurrentGuess] = useState("");
@@ -60,6 +58,7 @@ export function useGame({language}: UseGameLogicProps) {
     const [appNotice, setAppNotice] = useState<string | null>("");
     const [isShaking, setIsShaking] = useState(false);
 
+    const [showResultsView, setShowResultsView] = useState(false);
     const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
 
     // if the surface keyboard is active, the proxy keyboard should not be active and vice versa
@@ -105,6 +104,22 @@ export function useGame({language}: UseGameLogicProps) {
         setIsShaking(true);
         setTimeout(() => setIsShaking(false), 500);
     }
+
+    const openSuccessModal = useCallback(() => {
+        // if (gameStatus !== GAME_STATUS.PLAYING) {
+        setShowSuccessModal(true);
+        // if (gameStatus === GAME_STATUS.WON)
+        // }
+    }, []);
+
+    const displayResultsView = useCallback((resultView: ResultView) => {
+        setShowResultsView(true);
+        if (resultView === RESULT_VIEW.MODAL) {
+            openSuccessModal();
+        }
+    },[openSuccessModal]);
+
+
     // Logic to add letters, backspace, and submit would go here
     const onChar = useCallback((char: string) => {
         if (gameStatus !== GAME_STATUS.PLAYING) return;
@@ -141,34 +156,41 @@ export function useGame({language}: UseGameLogicProps) {
         }
 
         setGuessStatus(GUESS_STATUS.SUBMITTING);
+        console.log(new Date().toISOString(), "The guess is being submitted, so keyboards should freeze now.");
         // 4. If valid, submit the guess
         const formattedCurrentGuess = formatGuess(currentGuess, solution);
         setGuesses((prev) => [...prev, formattedCurrentGuess]);
         setCurrentGuess(""); // Clear for the next row
 
         // 5. Check Win/Loss conditions
-        setTimeout(() => {
-            updateUsedKeys(formattedCurrentGuess);
-            setGuessStatus(GUESS_STATUS.TYPING);
+        updateUsedKeys(formattedCurrentGuess);
 
-            if (formattedGuess === solution.toLowerCase()) {
+        if (formattedGuess === solution.toLowerCase()) {
+            console.log(new Date().toISOString(), "We know you've won, but we are keeping it hush");
+            setTimeout(() => {
+                console.log(new Date().toISOString(), "Now we are broadcasting it");
                 showSystemNotice("Amazing Work");
                 setGameStatus(GAME_STATUS.WON);
-            } else if (guesses.length >= 5) { // 5 because we just added the 6th
+                setTimeout(() => {
+                    displayResultsView(RESULT_VIEW.MODAL);
+                }, 1000);
+            }, 1200);
+        } else if (guesses.length >= 5) { // 5 because we just added the 6th
+            setTimeout(() => {
                 showSystemNotice("Better Luck Next Time");
                 setGameStatus(GAME_STATUS.LOST);
-            }
-        }, 1800);
-
-        // console.log("Checking word:", currentGuess);
-    }, [currentGuess, guesses, solution, validWords, gameStatus]);
-
-    const openModal = useCallback(() => {
-        if (gameStatus !== GAME_STATUS.PLAYING) {
-            setShowSuccessModal(true);
-            // if (gameStatus === GAME_STATUS.WON)
+                setTimeout(() => {
+                    displayResultsView(RESULT_VIEW.MODAL);
+                }, 100);
+            }, 1100);
+        } else {
+            setTimeout(() => {
+                console.log(new Date().toISOString(), "Keyboards are now free for typing again");
+                setGuessStatus(GUESS_STATUS.TYPING);
+            }, 1200)
         }
-    }, [gameStatus])
+        // console.log("Checking word:", currentGuess);
+    }, [gameStatus, currentGuess, validWords, solution, guesses.length, displayResultsView]);
 
     const closeSuccessModal = () => {
         setShowSuccessModal(false);
@@ -177,17 +199,30 @@ export function useGame({language}: UseGameLogicProps) {
     useEffect(() => {
         // Pick the word only once on the client
         // const word = getRandomSolution(currentLanguage);
-        const word = getDailySolution(language);
-        setSolution(word);
+        // const word = getDailySolution(language);
+        // setSolution(word);
     }, []); // Empty array ensures this only runs on mount
 
     useEffect(() => {
-        openModal()
     }, [gameStatus]);
 
+    const isKeyboardActive = gameStatus === GAME_STATUS.PLAYING && guessStatus === GUESS_STATUS.TYPING
+    const isOnscreenKeyboardVisible = (
+        gameStatus === GAME_STATUS.PLAYING || showSuccessModal ||
+        (!showResultsView && (gameStatus === GAME_STATUS.LOST || gameStatus === GAME_STATUS.WON)));
 
     const {
-        proxyInputRef, surfaceKeyboardActive, openProxyKeyboard, enableSurfaceKeyboard, onProxyInputChange, onProxyInputKeyDown} = useKeyboard({onChar, onDelete, onEnter, keyboardActive: (gameStatus === GAME_STATUS.PLAYING && guessStatus === GUESS_STATUS.TYPING)
+        proxyInputRef,
+        surfaceKeyboardActive,
+        openProxyKeyboard,
+        enableSurfaceKeyboard,
+        onProxyInputChange,
+        onProxyInputKeyDown
+    } = useKeyboard({
+        onChar,
+        onDelete,
+        onEnter,
+        keyboardActive: isKeyboardActive
     });
 
     const shareScore = async () => {
@@ -227,12 +262,14 @@ export function useGame({language}: UseGameLogicProps) {
         onEnter,
         showSuccessModal,
         closeSuccessModal,
+        isOnscreenKeyboardVisible,
         proxyInputRef,
         openProxyKeyboard,
         surfaceKeyboardActive,
         enableSurfaceKeyboard,
         onProxyInputChange,
         onProxyInputKeyDown,
+        showResultsView,
         shareScore
     }
 }

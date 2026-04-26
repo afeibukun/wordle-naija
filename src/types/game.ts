@@ -31,3 +31,9 @@ export const GUESS_STATUS = {
     COMPLETED: 'completed',
 } as const
 export type GuessStatus = typeof GUESS_STATUS[keyof typeof GUESS_STATUS];
+
+export const RESULT_VIEW = {
+    MODAL: "modal",
+    FLAT: "flat"
+} as const;
+export type ResultView = typeof RESULT_VIEW[keyof typeof RESULT_VIEW];

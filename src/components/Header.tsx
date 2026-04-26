@@ -15,7 +15,7 @@ export const Header = ({appNotice, currentLanguage, onShowHelp}: HeaderProps) =>
                 <h1 className="text-3xl md:text-4xl font-black tracking-widest uppercase">Wordle <span
                     className="text-green-500">Naija</span></h1>
             </div>
-            {appNotice && (<SystemToast message={appNotice}/>)}
+            {(appNotice) && (<SystemToast message={appNotice}/>)}
             <div className="mt-2 md:mt-4">
             <div className="flex flex-row gap-2 justify-center items-center">
                 <LanguageIndicator current={currentLanguage}/>

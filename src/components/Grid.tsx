@@ -1,14 +1,15 @@
 import GameRow from "@/src/components/GameRow";
-import {CELL_STATUS, Guess} from "@/src/types/game";
+import {CELL_STATUS, GAME_STATUS, GameStatus, Guess} from "@/src/types/game";
 
 interface GridProps {
     guesses: Array<Guess>;
     currentGuess: string;
     solution: string;
     currentGuessIsShaking: boolean;
+    gameStatus: GameStatus;
 }
 
-export default function Grid({guesses, currentGuess, solution, currentGuessIsShaking}: GridProps) {
+export default function Grid({guesses, currentGuess, solution, currentGuessIsShaking , gameStatus}: GridProps) {
     const empties = guesses.length < 5 ? Array.from(Array(5 - guesses.length)) : [];
 
     const currentGuessObject: Guess = currentGuess.padEnd(5, " ").split('').map(char => ({
@@ -28,7 +29,7 @@ export default function Grid({guesses, currentGuess, solution, currentGuessIsSha
             <div className="grid-container grid grid-rows-6 gap-1 md:gap-2 mb-6 md:mb-8">
                 {/* 1. Past Guesses */}
                 {guesses.map((guess: Guess, i: number) => (
-                    <GameRow key={i} guess={guess} solution={solution} isSubmitted/>
+                    <GameRow key={i} guess={guess} solution={solution} isSubmitted isGameWon={gameStatus === GAME_STATUS.WON} isLastGuess = {i === guesses.length - 1} />
                 ))}
 
                 {/* 2. Current Active Row */}
