@@ -36,18 +36,20 @@ export default function HowToPlay({onClose}: { onClose: () => void }) {
                     ✕
                 </button>
 
-                <div className="app-title text-left mb-2">
-                    <h1 className="text-lg md:text-xl font-black tracking-tight uppercase">
-                        <span className="text-slate-300">How to play</span> <span className="text-slate-100">Wordle</span> <span
+                <div className="app-title text-left mb-2 space-y-4">
+                    <h1 className="text-sm md:text-base font-black tracking-tight uppercase">
+                        <span className="text-slate-100">Wordle</span> <span
                         className="text-green-500">Naija</span></h1>
+                    <h2 className="text-lg md:text-xl font-black tracking-tight uppercase">
+                        <span className="text-slate-300">How to play</span> </h2>
                 </div>
 
                 <div className="space-y-2 mb-6 list-disc">
-                    <p className="text-slate-300 text-[12px] md:text-sm font-bold">
-                        You guess the word in 6 attempts.
+                    <p className="text-slate-300 text-sm md:text-base font-bold">
+                        <span className="relative mr-3 px-3 h-8 inline-flex items-center bg-slate-700 rounded-l-lg before:content-[''] before:absolute before:left-full before:top-[-1px] before:h-0 before:w-0  before:border-y-[17px] before:border-y-transparent before:border-l-[12px] before:border-l-slate-700">The  Goal:</span>  Guess the word in 6 attempts.
                     </p>
                     <p className="text-slate-300 text-[12px] md:text-sm">- Each attempts must be a valid 5-letter word in
-                        the stated language.</p>
+                        the stated language. (E.g Pidgin)</p>
                     <p className="text-slate-300 text-[12px] md:text-sm">- The color of the tiles will change to show you
                         how close your guess was to the solution of the wordle.</p>
                 </div>

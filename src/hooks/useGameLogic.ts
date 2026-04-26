@@ -66,7 +66,7 @@ export function useGameLogic({ language}: UseGameLogicProps) {
 
     const showSystemNotice = (msg: string) => {
         setAppNotice(msg)
-        setTimeout(() => setToastMsg(null), 2000);
+        setTimeout(() => setAppNotice(null), 2000);
     }
 
     const updateUsedKeys = (formattedGuess: Tile[]) => {

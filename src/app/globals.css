@@ -52,13 +52,13 @@ html, body {
   /* Pop animation for typing a letter */
   @keyframes pop {
     0% {
-      transform: scale(1);
+      transform: scale(1); border-color: #334155;
     }
     50% {
-      transform: scale(1.1);
+      transform: scale(1.1); border-color: #64748b;
     }
     100% {
-      transform: scale(1);
+      transform: scale(1); border-color: #475569;
     }
   }
 
@@ -67,9 +67,12 @@ html, body {
   }
 
   @keyframes flip {
-    0% { transform: rotateX(0); }
-    50% { transform: rotateX(90deg); }
-    100% { transform: rotateX(0); }
+    /*0% { transform: rotateX(0); }*/
+    /*50% { transform: rotateX(90deg); }*/
+    /*100% { transform: rotateX(0); }*/
+    0% { transform: scaleY(1);  }
+    50% { transform: scaleY(0); }
+    100% { transform: scaleY(1); }
   }
 
   .animate-flip {
