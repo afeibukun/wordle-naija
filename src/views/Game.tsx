@@ -77,12 +77,17 @@ export default function GameView() {
                 {(!solution || !isLoaded) && <SplashScreen/>}
                 <main
                     className={`transition-opacity duration-750 ${(isLoaded && solution) ? 'opacity-100' : 'opacity-0'} flex flex-col items-center justify-between h-full text-white gap-y-6 md:gap-y-12`}>
+                    <div className="w-full">
                     <Header
                         currentLanguage={currentLanguage}
                         appNotice={appNotice}
+                        onLanguageChange={(newLanguage) => handleGameRestart(newLanguage)}
                         onShowHelp={() => setShowHelp(true)}
                     />
+                    </div>
+
                     {showHelp && <HowToPlay onClose={closeHelp}/>}
+                    <div className="w-full">
                     <div className="px-2 md:px-4 pt-2 pb-8 md:pt-12 md:pb-20">
                         {solution && (
                         <div className="flex flex-col items-center justify-center">
@@ -131,6 +136,7 @@ export default function GameView() {
                             }
                         </div>
                             ) }
+                    </div>
                     </div>
                 </main>
             </div>

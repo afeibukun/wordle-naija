@@ -183,9 +183,9 @@ export function useGame() {
         updateUsedKeys(formattedCurrentGuess);
 
         if (formattedGuess === solution.toLowerCase()) {
-            console.log(new Date().toISOString(), "We know you've won, but we are keeping it hush");
+            // console.log(new Date().toISOString(), "We know you've won, but we are keeping it hush");
             setTimeout(() => {
-                console.log(new Date().toISOString(), "Now we are broadcasting it");
+                // console.log(new Date().toISOString(), "Now we are broadcasting it");
                 showSystemNotice("Amazing Work");
                 setGameStatus(GAME_STATUS.WON);
                 setTimeout(() => {
@@ -202,7 +202,7 @@ export function useGame() {
             }, 1100);
         } else {
             setTimeout(() => {
-                console.log(new Date().toISOString(), "Keyboards are now free for typing again");
+                // console.log(new Date().toISOString(), "Keyboards are now free for typing again");
                 setGuessStatus(GUESS_STATUS.TYPING);
             }, 1200)
         }
