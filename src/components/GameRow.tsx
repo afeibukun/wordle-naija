@@ -62,7 +62,7 @@ const TileView = ({char, status, index, isAnimationEnabled = true, isTileOnWinni
                     : isSubmitted ? `${index * 150}ms` : '0ms',
             }}
             className={`game-tile w-12 md:w-14 h-12 md:h-14 border md:border-2 flex items-center justify-center text-lg md:text-2xl font-bold uppercase transition-colors duration-0
-            ${(isTileOnWinningRow && isAnimationEnabled) ? 'animate-bounce-win ' + STATUS_COLORS[status] 
+            ${(isTileOnWinningRow && isAnimationEnabled) ? 'animate-bounce-win ' + STATUS_COLORS[status]
                 : (isSubmitted && isAnimationEnabled) ? STATUS_STYLE[status]
                     : (isOnCurrentRow && isAnimationEnabled) ? 'animate-pop'
                         : STATUS_COLORS[status]} 

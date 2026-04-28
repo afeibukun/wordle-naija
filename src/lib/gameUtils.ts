@@ -21,3 +21,8 @@ const getDaysSinceStart = (startDate: Date) => {
     // 2. Convert to days and round down
     return Math.floor(diffInMs / (1000 * 60 * 60 * 24));
 };
+
+export const getStorageKey = (lang: GameLanguage) => {
+    const date = new Date().toISOString().split('T')[0]; // e.g., "2024-04-27"
+    return `wordle-naija-${date}-${lang}`;
+};

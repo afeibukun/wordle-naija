@@ -14,7 +14,8 @@ export interface Tile {
 
 export type Guess = Tile[];
 
-export type GameLanguage = 'pid' | 'yo' | 'ig' | 'ha'; //'en'
+export const LANGUAGES = ['pid' , 'yo' , 'ig' , 'ha'] as const;
+export type GameLanguage = typeof LANGUAGES[number]; //'en'
 
 export const GAME_STATUS = {
     IDLE: "idle",
@@ -22,6 +23,7 @@ export const GAME_STATUS = {
     WON: "won",
     LOST: "lost",
     ERROR: "error",
+    REVIEW: "review",
 } as const;
 export type GameStatus = typeof GAME_STATUS[keyof typeof GAME_STATUS];
 

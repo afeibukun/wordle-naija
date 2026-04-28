@@ -1,7 +1,7 @@
 import {Tile} from "@/src/types/game";
 import GameRow from "@/src/components/GameRow";
 
-export default function HowToPlay({onClose}: { onClose: () => void }) {
+export default function HowToPlayModal({onClose}: { onClose: () => void }) {
     // Example data for the visual guides
     const exampleCorrect: Tile[] = [
         {char: 'A', status: 'correct'},

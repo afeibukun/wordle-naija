@@ -1,4 +1,5 @@
 import {ChangeEvent, KeyboardEvent as ReactKeyboardEvent, MouseEvent, RefObject, useEffect, useRef, useState} from 'react';
+import {CELL_STATUS, Guess, Tile, TileStatus} from "@/src/types/game";
 
 interface KeyboardOptions {
     keyboardActive?: boolean; // if the game itself requires keyboard to not be active
@@ -8,7 +9,6 @@ interface KeyboardOptions {
 }
 
 export function useKeyboard({keyboardActive = true, onChar, onDelete, onEnter}: KeyboardOptions) {
-
     const [surfaceKeyboardActive, setSurfaceKeyboardActive] = useState<boolean>(true);
 
     const enableSurfaceKeyboard = () => {
@@ -37,7 +37,7 @@ export function useKeyboard({keyboardActive = true, onChar, onDelete, onEnter}: 
         openProxyKeyboard,
         enableSurfaceKeyboard,
         onProxyInputChange,
-        onProxyInputKeyDown
+        onProxyInputKeyDown,
     }
 }
 interface SurfaceKeyboardOptions {
@@ -107,4 +107,35 @@ export function useProxyKeyboard({isActive,onChar, onEnter, onDelete, disableSur
     }
 
     return {proxyInputRef, openProxyKeyboard, onProxyInputChange, onProxyInputKeyDown};
+}
+
+export const useOnscreenKeyboard = () =>{
+    const [usedKeys, setUsedKeys] = useState<Record<string, TileStatus>>({});
+
+    const updateUsedKeys = (formattedGuess: Guess) => {
+        setUsedKeys((prev) => {
+            const newKeys = {...prev};
+            formattedGuess.forEach(({char, status}) => {
+                const currentStatus = newKeys[char];
+                // Logic: Only update if the new status is "better" than the old one
+                if (status === CELL_STATUS.CORRECT) {
+                    newKeys[char] = CELL_STATUS.CORRECT;
+                } else if (status === CELL_STATUS.PRESENT && currentStatus !== CELL_STATUS.CORRECT) {
+                    newKeys[char] = CELL_STATUS.PRESENT;
+                } else if (status === CELL_STATUS.ABSENT && !currentStatus) {
+                    newKeys[char] = CELL_STATUS.ABSENT;
+                }
+            });
+
+            return newKeys;
+        });
+    };
+
+    const resetUsedKeys = () => {
+        setUsedKeys({});
+    }
+
+    return{
+        usedKeys, updateUsedKeys, resetUsedKeys
+    }
 }

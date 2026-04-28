@@ -1,8 +1,8 @@
 import SystemToast from "@/src/components/SystemToast";
 import LanguageIndicator from "@/src/components/LanguageIndicator";
-import {GameLanguage} from "@/src/types/game";
+import {GameLanguage, LANGUAGES} from "@/src/types/game";
 import {Globe, HelpCircle} from "lucide-react";
-import {GAME_LANGUAGES, LANG_NAMES} from "@/src/data/constant";
+import {LANG_NAMES} from "@/src/data/constant";
 import {useEffect, useRef, useState} from "react";
 
 interface HeaderProps {
@@ -69,7 +69,7 @@ export const Header = ({appNotice, currentLanguage, onLanguageChange, onShowHelp
                                     onMouseLeave={() => setIsLanguageMenuOpen(false)}
                                 >
                                     <div className="p-1">
-                                        {GAME_LANGUAGES.map((l) => (
+                                        {LANGUAGES.map((l) => (
                                             <button
                                                 key={l}
                                                 onClick={() => {
