@@ -6,20 +6,21 @@ import {GAME_STATUS, GameLanguage, GameStatus} from "@/src/types/game";
 import GameToast from "@/src/components/GameToast";
 import SuccessModal from "@/src/components/ResultModal";
 import {useEffect, useState, MouseEvent} from "react";
-import {ShareButton} from "@/src/ui/ShareButton";
-import {PrimaryButton} from "@/src/ui/PrimaryButton";
 import {ProxyKeyboardInput} from "@/src/components/ProxyKeyboardInput";
 import HowToPlayModal from "@/src/components/HowToPlayModal";
 import {Header} from "@/src/components/Header";
 import SplashScreen from "@/src/components/SplashScreen";
 import {ResultAction} from "@/src/components/ResultAction";
 import {TryOtherLanguageSection} from "@/src/components/TryOtherLanguageSection";
+import {useTranslation} from "@/src/hooks/useTranslation";
+import FeedbackFormModal from "@/src/components/FeedbackFormModal";
 
 
 export default function GameView() {
 
     const [showHelp, setShowHelp] = useState(false);
     const [isLoaded, setIsLoaded] = useState(false);
+    const [showFeedbackForm, setShowFeedbackForm] = useState(false);
 
     useEffect(() => {
         // Simulate loading game assets and dictionary
@@ -51,24 +52,23 @@ export default function GameView() {
         guesses,
         currentGuess,
         gameStatus,
-        usedKeys,
         toastMsg,
         isShaking,
-        onChar,
-        onDelete,
-        onEnter,
         appNotice,
         showSuccessModal,
-        closeSuccessModal,
+        showResultsView,
+        usedKeys,
         isOnscreenKeyboardVisible,
         proxyInputRef,
         openProxyKeyboard,
         onProxyInputChange,
         onProxyInputKeyDown,
         enableSurfaceKeyboard,
-        showResultsView,
+        onScreenKeyPress,
+        closeSuccessModal,
         shareScore,
-        handleGameRestart
+        handleGameRestart,
+        showSystemNotice,
     } = useGame();
 
     const isGameReady = !!solution && isLoaded;
@@ -82,14 +82,15 @@ export default function GameView() {
                     className={`transition-opacity duration-750 ${(isGameReady) ? 'opacity-100' : 'opacity-0'} flex flex-col items-center justify-between h-full text-white gap-y-6 md:gap-y-12`}>
                     <div className="w-full">
                         <Header
+
                             currentLanguage={currentLanguage}
                             appNotice={appNotice}
                             onLanguageChange={(newLanguage) => handleGameRestart(newLanguage)}
                             onShowHelp={() => setShowHelp(true)}
+                            openFeedbackForm = {() => setShowFeedbackForm(true)}
                         />
                     </div>
-
-                    {showHelp && <HowToPlayModal onClose={closeHelp}/>}
+                    {showHelp && <HowToPlayModal lang={currentLanguage} onClose={closeHelp}/>}
                     <div className="w-full">
                         <div className="px-2 md:px-4 pt-2 pb-8 md:pt-12 md:pb-20">
                             {solution && (
@@ -113,7 +114,7 @@ export default function GameView() {
                                             enableSurfaceKeyboard={enableSurfaceKeyboard}
                                         />
                                     </div>
-                                    <div className="toast-container relative w-full">
+                                    <div className="result-summary-container max-w-3xl">
                                         {(isInPageNotificationVisible) && (
                                             <ResultSummary
                                                 gameStatus={gameStatus}
@@ -122,12 +123,13 @@ export default function GameView() {
                                                 handleGameRestart={(newLanguage) => handleGameRestart(newLanguage)}
                                             />
                                         )}
+                                    </div>
+                                    <div className="toast-container relative w-full">
                                         {(toastMsg) && (<GameToast message={toastMsg}/>)}
                                     </div>
                                     {isOnscreenKeyboardVisible &&
                                         <div>
-                                            <Keyboard onChar={(char: string) => onChar(char)} onEnter={() => onEnter()}
-                                                      onDelete={() => onDelete()} usedKeys={usedKeys}/>
+                                            <Keyboard usedKeys={usedKeys} onScreenKeyPress={onScreenKeyPress} />
                                         </div>
                                     }
                                 </div>
@@ -142,10 +144,22 @@ export default function GameView() {
                         isWon={gameStatus === GAME_STATUS.WON}
                         attempts={guesses.length.toString()}
                         currentLanguage={currentLanguage}
+                        gameStatus={gameStatus}
                         onShare={() => shareScore()}
                         onClose={() => closeSuccessModal()}
                         onRestart={(newLanguage) => handleGameRestart(newLanguage)}
                     />)
+            )}
+
+            { showFeedbackForm && (
+                <FeedbackFormModal
+                    lang={currentLanguage}
+                    onClose={() => {
+                        setShowFeedbackForm(false)
+                    }}
+                    showSystemNotice={showSystemNotice}
+
+                />
             )}
         </div>
     );
@@ -159,17 +173,22 @@ interface ResultSummaryProps {
 }
 
 const ResultSummary = ({gameStatus, currentLanguage, shareScore, handleGameRestart}: ResultSummaryProps) => {
+    const {translation} = useTranslation(currentLanguage);
     return (
         <div className="px-8 md:px-24 text-slate-900">
             <div>
-                <h2 className="text-2xl md:text-3xl font-black mb-4 text-slate-300">
-                    { gameStatus === GAME_STATUS.WON ? "🎉 YOU Have Completed the game!"
-                        : gameStatus === GAME_STATUS.REVIEW ? "🥂 You already solved the puzzle for today"
-                            : "😔 Better Luck Next Time!"
+                <h2 className="text-2xl md:text-3xl font-black mb-4 text-slate-300 uppercase">
+                    { gameStatus === GAME_STATUS.WON ? "🎉 "+translation("winAlt")
+                        : gameStatus === GAME_STATUS.REVIEW ? "🥂 "+translation("alreadySolvedForToday")
+                            : "😔 "+translation("betterLuckNextTime")
                     }
                 </h2>
             </div>
-            <ResultAction onShare={() => shareScore()}/>
+            <ResultAction
+                lang={currentLanguage}
+                onShare={() => shareScore()}
+                gameStatus={gameStatus}
+            />
             <div className="mb-4"></div>
             <TryOtherLanguageSection currentLanguage={currentLanguage}
                                      onRestart={(newLanguage) => handleGameRestart(newLanguage)}/>

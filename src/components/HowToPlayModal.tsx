@@ -1,7 +1,12 @@
-import {Tile} from "@/src/types/game";
+import {GameLanguage, Tile} from "@/src/types/game";
 import GameRow from "@/src/components/GameRow";
+import {useTranslation} from "@/src/hooks/useTranslation";
 
-export default function HowToPlayModal({onClose}: { onClose: () => void }) {
+interface Props {
+    lang:GameLanguage;
+    onClose: () => void;
+}
+export default function HowToPlayModal({lang, onClose}: Props) {
     // Example data for the visual guides
     const exampleCorrect: Tile[] = [
         {char: 'A', status: 'correct'},
@@ -27,6 +32,8 @@ export default function HowToPlayModal({onClose}: { onClose: () => void }) {
         {char: 'E', status: 'empty'},
     ];
 
+    const { translation } = useTranslation(lang);
+
     return (
         <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
             <div
@@ -41,12 +48,12 @@ export default function HowToPlayModal({onClose}: { onClose: () => void }) {
                         <span className="text-slate-100">Wordle</span> <span
                         className="text-green-500">Naija</span></h1>
                     <h2 className="text-lg md:text-xl font-black tracking-tight uppercase">
-                        <span className="text-slate-300">How to play</span> </h2>
+                        <span className="text-slate-300">{translation('howToPlay')}</span> </h2>
                 </div>
 
                 <div className="space-y-2 mb-6 list-disc">
                     <p className="text-slate-300 text-sm md:text-base font-bold">
-                        <span className="relative mr-3 px-3 h-8 inline-flex items-center bg-slate-700 rounded-l-lg before:content-[''] before:absolute before:left-full before:top-[-1px] before:h-0 before:w-0  before:border-y-[17px] before:border-y-transparent before:border-l-[12px] before:border-l-slate-700">The  Goal:</span>  Guess the word in 6 attempts.
+                        <span className="relative mr-3 px-3 h-8 inline-flex items-center bg-slate-700 rounded-l-lg before:content-[''] before:absolute before:left-full before:top-[-1px] before:h-0 before:w-0  before:border-y-[17px] before:border-y-transparent before:border-l-[12px] before:border-l-slate-700">The  Goal:</span>  {translation('guessTheWord')}
                     </p>
                     <p className="text-slate-300 text-[12px] md:text-sm">- Each attempts must be a valid 5-letter word in
                         the stated language. (E.g Pidgin)</p>

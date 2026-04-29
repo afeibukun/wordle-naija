@@ -1,11 +1,11 @@
 import {ChangeEvent, KeyboardEvent as ReactKeyboardEvent, MouseEvent, RefObject, useEffect, useRef, useState} from 'react';
-import {CELL_STATUS, Guess, Tile, TileStatus} from "@/src/types/game";
+import {CELL_STATUS, Guess, TileStatus} from "@/src/types/game";
 
 interface KeyboardOptions {
     keyboardActive?: boolean; // if the game itself requires keyboard to not be active
-    onChar: (key: string) => void;
-    onDelete: () => void;
-    onEnter: () => void;
+    onChar: (char:string)=>void;
+    onDelete:() =>void;
+    onEnter:() => void;
 }
 
 export function useKeyboard({keyboardActive = true, onChar, onDelete, onEnter}: KeyboardOptions) {
@@ -21,19 +21,16 @@ export function useKeyboard({keyboardActive = true, onChar, onDelete, onEnter}: 
 
     const {
         proxyInputRef, openProxyKeyboard, onProxyInputChange, onProxyInputKeyDown
-    } = useProxyKeyboard({isActive: (keyboardActive && !surfaceKeyboardActive), onChar, onEnter, onDelete, disableSurfaceKeyboard});
+    } = useProxyKeyboard({isActive: (keyboardActive && !surfaceKeyboardActive),  disableSurfaceKeyboard, onChar, onDelete, onEnter});
 
-    useSurfaceKeyboard({
-        isActive: (surfaceKeyboardActive && keyboardActive),
-        proxyInputRef,
-        onChar,
-        onDelete,
-        onEnter,
-    });
+    useSurfaceKeyboard({isActive: (surfaceKeyboardActive && keyboardActive), proxyInputRef, onChar, onDelete, onEnter});
+
+    const {onScreenKeyPress} = useOnscreenKeyboard({onChar, onDelete, onEnter});
 
     return {
         proxyInputRef,
         surfaceKeyboardActive,
+        onScreenKeyPress,
         openProxyKeyboard,
         enableSurfaceKeyboard,
         onProxyInputChange,
@@ -43,16 +40,15 @@ export function useKeyboard({keyboardActive = true, onChar, onDelete, onEnter}: 
 interface SurfaceKeyboardOptions {
     isActive?: boolean;
     proxyInputRef: RefObject<HTMLInputElement | null>;
-    onChar: (key: string) => void;
-    onDelete: () => void;
-    onEnter: () => void;
+    onChar: (char:string)=>void;
+    onDelete:() =>void;
+    onEnter:() => void;
 }
 export function useSurfaceKeyboard({ isActive = true, proxyInputRef, onChar, onDelete, onEnter }: SurfaceKeyboardOptions) {
     useEffect(() => {
         if (!isActive) return;
 
         if (proxyInputRef && document.activeElement === proxyInputRef.current) return;
-
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.repeat || e.ctrlKey || e.metaKey) return;
 
@@ -69,17 +65,17 @@ export function useSurfaceKeyboard({ isActive = true, proxyInputRef, onChar, onD
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [isActive, proxyInputRef, onChar, onDelete, onEnter]); // Listens for logic changes
+    }, [isActive, onChar, onDelete, onEnter, proxyInputRef]); // Listens for logic changes
 }
 
 interface ProxyKeyboardProps {
     isActive: boolean;
-    onChar: (key: string) => void;
-    onEnter: () => void;
-    onDelete: () => void;
     disableSurfaceKeyboard: () => void;
+    onChar: (char:string)=>void;
+    onDelete:() =>void;
+    onEnter:() => void;
 }
-export function useProxyKeyboard({isActive,onChar, onEnter, onDelete, disableSurfaceKeyboard}:ProxyKeyboardProps ) {
+export function useProxyKeyboard({isActive,disableSurfaceKeyboard, onChar, onDelete, onEnter}:ProxyKeyboardProps ) {
     const proxyInputRef = useRef<HTMLInputElement>(null);
 
     const openProxyKeyboard = (e:MouseEvent<HTMLDivElement>) => {
@@ -109,7 +105,30 @@ export function useProxyKeyboard({isActive,onChar, onEnter, onDelete, disableSur
     return {proxyInputRef, openProxyKeyboard, onProxyInputChange, onProxyInputKeyDown};
 }
 
-export const useOnscreenKeyboard = () =>{
+interface OnScreenKeyboardProps{
+    onEnter:() => void;
+    onDelete:() => void;
+    onChar: (char:string)=>void;
+}
+export const useOnscreenKeyboard = ({onEnter, onDelete, onChar}:OnScreenKeyboardProps) =>{
+
+    const onScreenKeyPress = (key: string) => {
+        if (key === "ENTER") {
+            onEnter(); // Submit the guess
+        } else if (key === "⌫") {
+            onDelete(); // Remove last character
+        } else {
+            onChar(key); // Add new character
+        }
+    };
+
+    return{
+        onScreenKeyPress
+    }
+}
+
+
+export const useKeyboardHelper = () =>{
     const [usedKeys, setUsedKeys] = useState<Record<string, TileStatus>>({});
 
     const updateUsedKeys = (formattedGuess: Guess) => {

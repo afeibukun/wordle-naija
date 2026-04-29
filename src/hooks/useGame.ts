@@ -11,7 +11,7 @@ import {
 } from "@/src/types/game";
 import {useCallback, useEffect, useMemo, useState} from "react";
 import dictionary from "@/src/data/dictionary.json";
-import {useKeyboard, useOnscreenKeyboard} from "@/src/hooks/useKeyboard";
+import {useKeyboard, useKeyboardHelper, useOnscreenKeyboard} from "@/src/hooks/useKeyboard";
 import {getDailySolution, getStorageKey} from "@/src/lib/gameUtils";
 import {LANG_NAMES} from "@/src/data/constant";
 
@@ -49,6 +49,7 @@ export const formatGuess = (guess: string, solution: string) => {
 // }
 
 export const useGame = () => {
+    // Game Notification Hook
     const {
         toastMsg,
         appNotice,
@@ -58,45 +59,27 @@ export const useGame = () => {
         triggerShake,
         showToast,
         showSystemNotice,
-        displayResultsView,
-        closeSuccessModal
+        closeSuccessModal,
+        displayResultsView
     } = useGameNotification();
 
-    const {
-        currentLanguage,
-        solution,
-        savedGuesses,
-        savedGameStatus,
-        handleLanguageChange
-    } = useGameInitializer({showSystemNotice})
+    // Game Initializer Hook
+    const {currentLanguage, solution, savedGuesses, savedGameStatus, handleLanguageChange} = useGameInitializer({showSystemNotice})
 
-    // Memoize dictionary for O(1) lookup speed
-    const validWords = useMemo(() => new Set(dictionary[currentLanguage]), [currentLanguage]);
+    // Keyboard Helper Hook
+    const {usedKeys, updateUsedKeys, resetUsedKeys} = useKeyboardHelper();
 
-    const {usedKeys, resetUsedKeys, updateUsedKeys} = useOnscreenKeyboard();
-
+    // Game Play Hook
     const {
         guesses,
         currentGuess,
         gameStatus,
         guessStatus,
-        onChar,
-        onDelete,
-        onEnter,
+        onChar,onEnter,onDelete,
         resetGamePlayResource
-    } = useGamePlay({
-        currentLanguage,
-        solution,
-        validWords,
-        triggerShake,
-        showToast,
-        updateUsedKeys,
-        showSystemNotice,
-        savedGuesses,
-        savedGameStatus,
-        displayResultsView
-    })
+    } = useGamePlay({currentLanguage, solution, savedGuesses, savedGameStatus, updateUsedKeys, triggerShake, showToast, showSystemNotice, displayResultsView})
 
+    // Game Restart Function
     const handleGameRestart = (newLang: GameLanguage) => {
         // 1. Update the language state
         handleLanguageChange(newLang, `Started new game in ${LANG_NAMES[newLang].toUpperCase()}`);
@@ -111,20 +94,18 @@ export const useGame = () => {
 
     const isOnscreenKeyboardVisible = (gameStatus === GAME_STATUS.PLAYING || (showSuccessModal && isGameCompleted) || (guessStatus === GUESS_STATUS.SUBMITTING && isGameCompleted));
 
+    // Keyboard Hook
     const {
         proxyInputRef,
         surfaceKeyboardActive,
+        onScreenKeyPress,
         openProxyKeyboard,
         enableSurfaceKeyboard,
         onProxyInputChange,
         onProxyInputKeyDown,
-    } = useKeyboard({
-        onChar,
-        onDelete,
-        onEnter,
-        keyboardActive: isKeyboardActive
-    });
+    } = useKeyboard({keyboardActive: isKeyboardActive, onEnter,onDelete,onChar});
 
+    // Share Score function
     const shareScore = async () => {
         const emojiGrid = generateEmojiGrid(guesses);
         const shareText = `Wordle Naija ${guesses.length}/6\n\n${emojiGrid}\n\nPlay at: [https://wordle-naija.netlify.app/]`;
@@ -154,58 +135,43 @@ export const useGame = () => {
         guesses,
         currentGuess,
         gameStatus,
-        usedKeys,
         toastMsg,
         appNotice,
         isShaking,
-        onChar,
-        onDelete,
-        onEnter,
         showSuccessModal,
-        closeSuccessModal,
+        showResultsView,
+        usedKeys,
+        onEnter,
+        onDelete,
+        onChar,
         isOnscreenKeyboardVisible,
         proxyInputRef,
-        openProxyKeyboard,
         surfaceKeyboardActive,
+        closeSuccessModal,
+        openProxyKeyboard,
         enableSurfaceKeyboard,
         onProxyInputChange,
         onProxyInputKeyDown,
-        showResultsView,
+        onScreenKeyPress,
         shareScore,
+        showSystemNotice,
         handleGameRestart
     }
 }
 
-interface GamePlayProps {
-    currentLanguage: GameLanguage,
-    solution: string | null,
-    validWords: Set<string>,
-    savedGuesses: Guess[],
-    savedGameStatus: GameStatus,
-    triggerShake: () => void,
-    showToast: (msg: string) => void,
-    updateUsedKeys: (guess: Guess) => void,
-    showSystemNotice: (msg: string) => void,
-    displayResultsView: (resultView: ResultView) => void,
+interface GamePlayProps{
+    currentLanguage:GameLanguage, solution:string|null, savedGuesses:Guess[], savedGameStatus:GameStatus,
+    updateUsedKeys:(guess:Guess)=>void, triggerShake: () => void, showToast: (msg:string) => void, showSystemNotice: (msg:string) => void, displayResultsView: (resultView:ResultView) => void
 }
-
-export const useGamePlay = ({
-                                currentLanguage,
-                                solution,
-                                validWords,
-                                savedGuesses,
-                                savedGameStatus,
-                                triggerShake,
-                                showToast,
-                                updateUsedKeys,
-                                showSystemNotice,
-                                displayResultsView
-                            }: GamePlayProps) => {
+export const useGamePlay = ({currentLanguage, solution, savedGuesses, savedGameStatus, updateUsedKeys, triggerShake, showToast, showSystemNotice, displayResultsView}:GamePlayProps) => {
     const [guesses, setGuesses] = useState<Guess[]>([]);
     const [currentGuess, setCurrentGuess] = useState("");
 
     const [gameStatus, setGameStatus] = useState<GameStatus>(GAME_STATUS.PLAYING);
     const [guessStatus, setGuessStatus] = useState<GuessStatus>(GUESS_STATUS.TYPING);
+
+    // Memoize dictionary for O(1) lookup speed
+    const validWords = useMemo(() => new Set(dictionary[currentLanguage]), [currentLanguage]);
 
     useEffect(() => {
         const updateSavedGamePlayResource = (savedGuesses: Guess[], savedGameStatus: GameStatus) => {
@@ -250,8 +216,8 @@ export const useGamePlay = ({
 
         // 1. Check if the word is long enough
         if (currentGuess.length !== 5) {
-            // console.log("Too short!");
             // TODO: Trigger a "Too short" toast/animation
+            showToast("Too Short");
             triggerShake();
             return;
         }
@@ -262,14 +228,12 @@ export const useGamePlay = ({
         // 3. Check if it exists in the selected language's dictionary
         const isValid = validWords.has(formattedGuess);
         if (!isValid) {
-            // console.log("Word not in dictionary!");
             showToast("Word not in dictionary!");
             triggerShake();
             return;
         }
 
         setGuessStatus(GUESS_STATUS.SUBMITTING);
-        // console.log(new Date().toISOString(), "The guess is being submitted, so keyboards should freeze now.");
         // 4. If valid, submit the guess
         const formattedCurrentGuess = formatGuess(formattedGuess, solution);
         setGuesses((prev) => [...prev, formattedCurrentGuess]);
@@ -279,9 +243,7 @@ export const useGamePlay = ({
         updateUsedKeys(formattedCurrentGuess);
 
         if (formattedGuess === solution.toLowerCase()) {
-            // console.log(new Date().toISOString(), "We know you've won, but we are keeping it hush");
             setTimeout(() => {
-                // console.log(new Date().toISOString(), "Now we are broadcasting it");
                 showSystemNotice("Amazing Work");
                 setGameStatus(GAME_STATUS.WON);
                 setTimeout(() => {
@@ -301,11 +263,9 @@ export const useGamePlay = ({
             }, 1100);
         } else {
             setTimeout(() => {
-                // console.log(new Date().toISOString(), "Keyboards are now free for typing again");
                 setGuessStatus(GUESS_STATUS.TYPING);
             }, 1200)
         }
-        // console.log("Checking word:", currentGuess);
     }, [gameStatus, solution, currentGuess, validWords, guesses, updateUsedKeys, triggerShake, showToast, showSystemNotice, displayResultsView]);
 
     return {
@@ -316,12 +276,10 @@ export const useGamePlay = ({
         onChar, onEnter, onDelete, resetGamePlayResource
     }
 }
-
-interface GameInitializerProps {
-    showSystemNotice: (msg: string) => void,
+interface GameInitializerProps{
+    showSystemNotice: (msg:string) => void;
 }
-
-export const useGameInitializer = ({showSystemNotice}: GameInitializerProps) => {
+export const useGameInitializer = ({showSystemNotice}:GameInitializerProps) => {
     const [currentLanguage, setCurrentLanguage] = useState<GameLanguage>("pid");
     const [solution, setSolution] = useState<string | null>(null);
     const [savedGuesses, setSavedGuesses] = useState<Guess[]>([]);
@@ -420,10 +378,7 @@ export const useGameNotification = () => {
         setTimeout(() => setIsShaking(false), 500);
     }
     const openSuccessModal = useCallback(() => {
-        // if (gameStatus !== GAME_STATUS.PLAYING) {
         setShowSuccessModal(true);
-        // if (gameStatus === GAME_STATUS.WON)
-        // }
     }, []);
 
     const closeSuccessModal = () => {

@@ -1,20 +1,22 @@
-import {GameLanguage} from "@/src/types/game";
+import {GameLanguage, GameStatus} from "@/src/types/game";
 import {SectionFooterBranding} from "@/src/components/SectionFooterBranding";
 import {TryOtherLanguageSection} from "@/src/components/TryOtherLanguageSection";
 import {ResultAction} from "@/src/components/ResultAction";
+import {useTranslation} from "@/src/hooks/useTranslation";
 
 interface ResultModalProp {
     isWon: boolean,
     attempts: string,
     currentLanguage: GameLanguage,
+    gameStatus:GameStatus,
     onShare: () => Promise<void>,
     onClose: () => void,
     onRestart: (languageCode:GameLanguage) => void,
 }
 
-export default function ResultModal({isWon, attempts, currentLanguage, onShare, onClose, onRestart}: ResultModalProp) {
+export default function ResultModal({isWon, attempts, currentLanguage, gameStatus, onShare, onClose, onRestart}: ResultModalProp) {
 
-
+    const { translation } = useTranslation(currentLanguage);
     return (
         <div
             className="modal fixed inset-0 bg-slate-950/80 flex items-center justify-center z-[100] animate-in fade-in zoom-in duration-300 px-4 md:px-2">
@@ -33,8 +35,8 @@ export default function ResultModal({isWon, attempts, currentLanguage, onShare, 
                         </svg>
                     </button>
                 </div>
-                <h2 className="text-2xl md:text-3xl font-black mb-4 text-slate-100">
-                    {isWon ? "🎉 YOU SABI!" : "😔 OBAKPE!"}
+                <h2 className="text-2xl md:text-3xl font-black mb-4 text-slate-100 uppercase">
+                    {isWon ? "🎉 "+ translation('win') : "😔 "+ translation('lose')}
                 </h2>
                 {/*<div>*/}
                 {/*    <p className="text-slate-400 mb-2">The word was:</p>*/}
@@ -44,7 +46,7 @@ export default function ResultModal({isWon, attempts, currentLanguage, onShare, 
                 <div className="bg-slate-800 p-4 rounded-lg mb-4 md:mb-6">
                     <p className="text-sm text-slate-300">Attempts: {attempts}/6</p>
                 </div>
-                <ResultAction onShare={onShare} />
+                <ResultAction lang={currentLanguage} gameStatus={gameStatus} onShare={onShare} />
                 <div className="mb-4"></div>
                 <TryOtherLanguageSection currentLanguage={currentLanguage} onRestart={onRestart} />
 

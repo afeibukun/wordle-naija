@@ -9,21 +9,11 @@ const ROWS = [
 
 interface KeyboardProps {
     usedKeys: Record<string, TileStatus>;
-    onChar: (key: string) => void;
-    onEnter: () => void;
-    onDelete: () => void;
+    onScreenKeyPress: (key:string) => void;
 }
 
-export default function Keyboard({usedKeys, onChar, onEnter, onDelete}: KeyboardProps) {
-    const handleKeyPress = (key: string) => {
-        if (key === "ENTER") {
-            onEnter(); // Submit the guess
-        } else if (key === "⌫") {
-            onDelete(); // Remove last character
-        } else {
-            onChar(key); // Add new character
-        }
-    };
+export default function Keyboard({usedKeys, onScreenKeyPress}: KeyboardProps) {
+
 
     return (
         <div className="keyboard-container overflow-hidden">
@@ -34,7 +24,7 @@ export default function Keyboard({usedKeys, onChar, onEnter, onDelete}: Keyboard
                             <KeyboardButton
                                 key={key}
                                 keyLabel={key}
-                                onClick={() => handleKeyPress(key)}
+                                onClick={() => onScreenKeyPress(key)}
                                 usedKeys={usedKeys}>
                             </KeyboardButton>
                         ))}

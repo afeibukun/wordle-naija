@@ -1,5 +1,4 @@
 import {CELL_STATUS, Guess, Tile, TileStatus} from "@/src/types/game";
-import {useRef} from "react";
 
 export const STATUS_COLORS = {
     [CELL_STATUS.CORRECT]: 'bg-green-600 border-green-600',
@@ -25,8 +24,6 @@ interface RowProps {
 
 export default function GameRow({
                                     guess,
-                                    solution,
-                                    isSubmitted = false,
                                     isAnimationEnabled = true,
                                     isGameWon = false,
                                     isLastGuess = false
