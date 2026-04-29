@@ -1,4 +1,3 @@
-// components/FeedbackForm.tsx
 import React, {useState} from 'react';
 import {X, Send, MessageSquare, Bug, Heart} from 'lucide-react';
 import {submitFeedback} from "@/src/hooks/useFeedback";
