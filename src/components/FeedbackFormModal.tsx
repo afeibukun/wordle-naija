@@ -15,7 +15,7 @@ const CATEGORIES = [
 interface FeedbackFormProps {
     lang: GameLanguage;
     onClose: () => void;
-    showSystemNotice:(msg:string) => void;
+    showSystemNotice: (msg: string) => void;
 }
 
 export default function FeedbackFormModal({lang, onClose, showSystemNotice}: FeedbackFormProps) {
@@ -33,7 +33,7 @@ export default function FeedbackFormModal({lang, onClose, showSystemNotice}: Fee
 
         if (result.success) {
             showSystemNotice("Your feedback has been sent successfully.")
-            onClose();
+            setTimeout(() => onClose(), 1200);
         }
     };
 
@@ -41,7 +41,7 @@ export default function FeedbackFormModal({lang, onClose, showSystemNotice}: Fee
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <div
                 className="bg-slate-900 border border-slate-800 text-slate-300 w-full max-w-md rounded-2xl shadow-2xl p-6 relative animate-in fade-in zoom-in duration-200">
-                <button onClick={()=>onClose()}
+                <button onClick={() => onClose()}
                         className="absolute top-4 right-4 text-slate-500 hover:text-white cursor-pointer">
                     <X size={20}/>
                 </button>
