@@ -92,8 +92,35 @@ export default function FeedbackFormModal({lang, onClose, showSystemNotice}: Fee
                             </>
                         )}
                     </button>
-                    <SectionFooterBranding/>
                 </form>
+
+                <div className="mt-4 md:mt-8 pt-2 md:pt-6 border-t border-slate-800 text-center">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 md:mb-3">
+                        Or
+                    </p>
+
+                    <a
+                        href="mailto:thedesdistrict@:gmail.com"
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-slate-800/40 hover:bg-slate-800 border border-slate-700 hover:border-slate-500 rounded-full transition-all group"
+                    >
+                        <div className="p-1.5 bg-slate-900 rounded-full">
+                            <svg
+                                xmlns="http://w3.org"
+                                className="h-3 w-3 text-green-500 group-hover:scale-110 transition-transform"
+                                fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+                        </div>
+                        <span className="text-xs font-bold text-slate-300">Shoot me an email</span>
+                    </a>
+
+                    <p className="mt-4 text-[9px] text-slate-600 italic">
+                        I read every message. Abeg, no spam!
+                    </p>
+                </div>
+
+                <SectionFooterBranding/>
             </div>
         </div>
     );
