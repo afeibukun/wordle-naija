@@ -15,6 +15,7 @@ import dictionary from "@/src/data/dictionary.json";
 import {useKeyboard, useKeyboardHelper} from "@/src/hooks/useKeyboard";
 import {getDailySolution, getStorageKey} from "@/src/lib/gameUtils";
 import {LANG_NAMES} from "@/src/data/constant";
+import {useSearchParams} from "next/navigation";
 
 export const formatGuess = (guess: string, solution: string) => {
     const solutionArray = [...solution.toLowerCase()];
@@ -125,7 +126,7 @@ export const useGame = () => {
     // Share Score function
     const shareScore = async () => {
         const emojiGrid = generateEmojiGrid(guesses);
-        const shareText = `Wordle Naija (${LANG_NAMES[currentLanguage].toUpperCase()}) ${guesses.length}/6\n\n${emojiGrid}\n\nPlay at: [https://wordle-naija.netlify.app/]`;
+        const shareText = `Wordle Naija (${LANG_NAMES[currentLanguage].toUpperCase()}) ${guesses.length}/6\n\n${emojiGrid}\n\nPlay at: [https://wordle-naija.netlify.app/?lang=${currentLanguage}]`;
 
         try {
             // 1. Force a copy to the clipboard first
@@ -317,6 +318,8 @@ interface GameInitializerProps {
 }
 
 export const useGameInitializer = ({showSystemNotice}: GameInitializerProps) => {
+    const searchParams = useSearchParams();
+
     const [currentLanguage, setCurrentLanguage] = useState<GameLanguage>("pid");
     const [solution, setSolution] = useState<string | null>(null);
     const [savedGuesses, setSavedGuesses] = useState<Guess[]>([]);
@@ -363,7 +366,7 @@ export const useGameInitializer = ({showSystemNotice}: GameInitializerProps) => 
             // updateGameResource([] as Guess[], GAME_STATUS.PLAYING);
             setTimeout(() => loadGameCore(language), 0)
         }
-    },[currentLanguage, showSystemNotice])
+    },[showSystemNotice])
 
     function isValidGameLanguage(val: string): val is GameLanguage {
         return LANGUAGES.includes(val as GameLanguage);
@@ -377,15 +380,26 @@ export const useGameInitializer = ({showSystemNotice}: GameInitializerProps) => 
         let msg = systemMessage
         if (!msg) msg = `Switched to ${LANG_NAMES[newLanguage].toUpperCase()}`
 
+        const params = new URLSearchParams(window.location.search);
+        params.set('lang', newLanguage);
+        window.history.replaceState(null, '',`?${params.toString()}` );
+
         showSystemNotice(msg);
         // verify saved game data
         startNewGame(newLanguage);
+
     };
 
     const initializeLanguage = useCallback(() => {
-        const savedLanguage = localStorage.getItem('wordle-naija-lang') as GameLanguage;
-        return (savedLanguage && isValidGameLanguage(savedLanguage)) ? savedLanguage : 'pid';
-    }, []);
+        const urlLang = searchParams.get('lang') as GameLanguage;
+        
+        const savedLang = localStorage.getItem('wordle-naija-lang') as GameLanguage;
+        
+        const isUrlLangValid = !!urlLang && isValidGameLanguage(urlLang);
+        const isSavedLangValid = !!savedLang && isValidGameLanguage(savedLang);
+        return isUrlLangValid ? urlLang : isSavedLangValid ? savedLang : 'pid';
+
+    }, [searchParams]);
 
     const initializeGame = useCallback(() => {
         const language = initializeLanguage();
