@@ -96,6 +96,9 @@ export default function GameView() {
                             {solution && (
                                 <div className="flex flex-col items-center justify-center">
                                     <div>
+                                        <p className="text-slate-300 font-bold text-center mb-1 uppercase tracking-wide">
+                                            <span className="inline-flex ms-2 text-[12px] text-slate-400 font-medium">Guess the word in 6 attempts</span>
+                                        </p>
                                         <div className="pb-10">
                                             <div onClick={(e: MouseEvent<HTMLDivElement>) => openProxyKeyboard(e)}>
                                                 <Grid
