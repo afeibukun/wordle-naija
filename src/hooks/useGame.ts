@@ -125,7 +125,7 @@ export const useGame = () => {
     // Share Score function
     const shareScore = async () => {
         const emojiGrid = generateEmojiGrid(guesses);
-        const shareText = `Wordle Naija ${guesses.length}/6\n\n${emojiGrid}\n\nPlay at: [https://wordle-naija.netlify.app/]`;
+        const shareText = `Wordle Naija (${LANG_NAMES[currentLanguage].toUpperCase()}) ${guesses.length}/6\n\n${emojiGrid}\n\nPlay at: [https://wordle-naija.netlify.app/]`;
 
         try {
             // 1. Force a copy to the clipboard first
