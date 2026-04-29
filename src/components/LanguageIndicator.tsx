@@ -1,8 +1,10 @@
 import {GameLanguage} from '@/src/types/game';
 import {LANG_NAMES} from "@/src/data/constant";
 
-
-export default function LanguageIndicator({current}: { current: GameLanguage }) {
+interface LanguageIndicatorProps {
+    lang: GameLanguage;
+}
+export default function LanguageIndicator({lang}: LanguageIndicatorProps) {
     return (
         <div className="language-indicator flex flex-col items-center gap-1 animate-in fade-in slide-in-from-top-1">
             <span className="hidden text-[8px] md:text-[10px] uppercase tracking-[0.2em] text-slate-500 font-bold">
@@ -14,7 +16,7 @@ export default function LanguageIndicator({current}: { current: GameLanguage }) 
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
                 </span>
                 <span className="text-[10px] md:text-sm font-semibold text-slate-200 uppercase tracking-wider">
-                    {LANG_NAMES[current]}
+                    {LANG_NAMES[lang]}
                 </span>
             </div>
         </div>

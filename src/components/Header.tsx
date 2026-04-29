@@ -1,7 +1,7 @@
 import SystemToast from "@/src/components/SystemToast";
 import LanguageIndicator from "@/src/components/LanguageIndicator";
 import {GameLanguage, LANGUAGES} from "@/src/types/game";
-import {Globe, HelpCircle, Info, LucideIcon, Menu, MessageSquare, MessageSquarePlus, Settings, X} from "lucide-react";
+import {Globe, HelpCircle, LucideIcon, Menu, MessageSquare, MessageSquarePlus, X} from "lucide-react";
 import {LANG_NAMES} from "@/src/data/constant";
 import React, {useEffect, useRef, useState} from "react";
 import {useTranslation} from "@/src/hooks/useTranslation";
@@ -184,7 +184,7 @@ export const Header = ({appNotice, currentLanguage, onLanguageChange, onShowHelp
                             <h2 className="text-sm md:text-base font-semibold tracking-widest uppercase text-center text-slate-400">Daily
                                 Puzzle</h2>
                         </div>
-                        <LanguageIndicator current={currentLanguage}/>
+                        <LanguageIndicator lang={currentLanguage}/>
                     </div>
                 </div>
             </div>
